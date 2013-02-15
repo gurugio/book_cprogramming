@@ -1,0 +1,11 @@
+# This file is set by configure
+HOST=@host@
+OS=@host_os@
+CPU=@CALIB_CFG_CPU@
+NASM=@NASM@
+CC=@CC@
+LD=@LD@
+OBJCOPY=@OBJCOPY@
+DD=@DD@
+NM=@NM@
+AR=@AR@

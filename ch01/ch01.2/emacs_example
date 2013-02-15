@@ -1,0 +1,146 @@
+;;; =============================================================
+;;; Korean Language Environment
+;;; =============================================================
+
+(if enable-multibyte-characters
+    (setq-default file-name-coding-system 'utf-8)
+    (prefer-coding-system 'utf-8)
+    (set-default-coding-systems 'utf-8)
+    (if  (not window-system)
+         (set-keyboard-coding-system 'utf-8)
+         (set-terminal-coding-system 'utf-8))
+    (set-selection-coding-system 'utf-8))
+
+;;; =============================================================
+;;; Text Mode
+;;; =============================================================
+; syntax highlighting
+(global-font-lock-mode t)
+
+;; set font
+(set-face-font 'default "-*-terminus-medium-r-normal-*-16-*-*-*-*-*-*-*")
+
+(setq default-major-mode (quote text-mode))
+
+(add-hook 'text-mode-hook
+          (function (lambda ()
+                      (setq fill-column 70)
+                      (turn-on-auto-fill))))
+
+;; Always end a file with a newline
+(setq require-final-newline t)
+
+;; Stop at the end of the file, not just add lines
+(setq next-line-add-newlines nil)
+(transient-mark-mode t)
+
+; show parenthesis matching
+(show-paren-mode t)
+;;; =============================================================
+;;; Programming Modes
+;;; =============================================================
+
+; bsd and stroustrup is good
+(setq c-default-style '((c-mode . "bsd")))
+(setq c-basic-offset 4)
+(setq-default indent-tabs-mode nil) ; use space instead of tab
+
+(load-library "font-lock")
+(load "cc-mode")
+
+ 
+; always insert indent at ENTER-key
+(define-key global-map (kbd "RET") 'newline-and-indent)
+
+(setq auto-mode-alist
+      (append
+       '(("\\.C$" . c++-mode)
+         ("\\.H$" . c++-mode)
+         ("\\.cc$" . c++-mode)
+         ("\\.cpp$" . c++-mode)
+         ("\\.hh$" . c++-mode)
+         ("\\.c$" . c-mode)
+         ("\\.h$" . c-mode)
+         ("\\.i$" . c++-mode)
+         ("\\.l$" . c++-mode)
+         ;; ("Makefile.$" . makefile-mode)
+         ;; ("makefile.$" . makefile-mode)
+         (".emacs" . lisp-mode)
+         )
+       auto-mode-alist))
+
+(setq line-number-mode t) ; line number at infor bar
+(add-hook 'find-file-hook (lambda () (linum-mode t))) ; line number at left margin
+
+;; show compiler-warning on edit buffer
+(global-cwarn-mode t)
+
+
+;;; =============================================================
+;;; COLORS
+;;; =============================================================
+
+(set-foreground-color "black")
+(set-background-color "white")
+(set-face-foreground 'region "white")
+(set-face-background 'region "gray")
+(set-face-foreground 'modeline "lightsteelblue")
+(set-face-background 'modeline "midnightblue")
+(set-cursor-color "black")
+
+; this path is default at Ubuntu
+(setq load-path (cons "/usr/share/emacs/site-lisp/emacs-goodies-el/" load-path))
+(require 'color-theme)
+; If color-theme-initlaize is defined, call it
+(if (fboundp 'color-theme-initialize)
+    (color-theme-initialize))
+(color-theme-charcoal-black)
+
+
+;;; =============================================================
+;;; ETCETERA
+;;; =============================================================
+
+(setq inhibit-startup-screen t)
+
+;; enable copy and delete of making area
+(pc-selection-mode)
+(pc-bindings-mode)
+
+(setq make-backup-files nil)
+
+; GNU GLOBAL for source tag
+(setq load-path (cons "/usr/share/emacs/site-lisp/global/" load-path))
+(autoload 'gtags-mode "gtags"
+  "Minor mode for browsing source code using GLOBAL" t)
+(add-hook 'c-mode-common-hook
+          (lambda () (gtags-mode t)))
+
+
+; disable tool-bar
+(tool-bar-mode -1)
+
+; truncate long line or display entire line onto multiple screen lines
+(setq-default truncate-lines nil)
+
+;; TRAMP
+(setq tramp-default-method "ssh")
+(setq tramp-chunksize 300)
+(setq tramp-debug-buffer t) ; debug
+(setq tramp-verbose 10)     ; debug
+
+;; F-keys
+(global-set-key [C-f1] 'man)
+(global-set-key [f2] 'grep)
+(global-set-key [f4] 'query-replace) 
+(global-set-key [f5] 'goto-line)
+(global-set-key [f6] 'other-window)
+(global-set-key [f7] 'previous-error)
+(global-set-key [f8] 'next-error)    
+(global-set-key [f9] 'compile)
+(global-set-key [f10] 'eshell) 
+
+
+(setq gdb-many-windows t) ; open info windows for gdb
+(iswitchb-mode)
+(which-function-mode)

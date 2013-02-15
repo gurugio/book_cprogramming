@@ -1,0 +1,164 @@
+빌드 과정을 준비하기 위해 빌드 대상이 될 소스를 몇개 만들겠습니다. 소스가 저장되는 디렉토리는 src와 test가 있습니다. src 디렉토리는 CA라이브러리에 들어갈 소스들이 저장됩니다. 그리고 test 디렉토리는 CA라이브러리의 각 API를 테스트할 유닛 테스트 소스들이 저장됩니다.
+
+현재는 configure에서 생성해준 플랫폼 정보가 있으므로 이 정보를 알려주는 API를 만들어보겠습니다. 그리고 이 정보를 화면에 출력하는 유닛 테스트를 만들어보겠습니다. 엄밀히 말하면 유닛테스트 프로그램이 화면에 데이터를 출력하고 끝난다면 테스트로서 의미가 없지만 실행 파일을 빌드하는 예제를 만들기 위해서 그렇게 만들어보겠습니다.
+
+다음은 src/sys_info.c 입니다.
+
+/*********************************************************************
+ * $Id$
+ *********************************************************************/
+
+#include <sys_info.h>
+#include <platform.h>
+
+
+/**
+ * return CPU information as char string
+ * @return char type string show CPU type
+ */
+char *sys_info_cpu_type(void)
+{
+    return CALIB_CFG_CPU;
+}
+
+/**
+ * return OS information as char string
+ * @return char type string show OS type
+ */
+char *sys_info_os_type(void)
+{
+    return CALIB_CFG_OS;
+}
+
+
+
+
+두개의 함수가 정의되어있습니다. 각각의 함수는 프로세서의 정보와 운영체제 정보를 알려주는 일을 합니다. CALIB_CFG_CPU와 CALIB_CFG_OS는 configure가 생성해준 platform.h에 정의되어있는 상수입니다.
+
+
+
+다음은 src/hello.c 입니다.
+
+/*********************************************************************
+ * $Id$
+ *********************************************************************/
+
+#include <hello.h>
+
+/**
+ * return greeting message to test library
+ * @return char type string "hello!"
+ */
+char *say_hello(void)
+{
+    static char hello[] = "hello!";
+    return hello;
+}
+
+hello.c는 라이브러리가 제대로 빌드되었는지 테스트해보기 위한 소스입니다. 특별히 하는 일은 없습니다.
+
+다음은 include/sys_info.h 입니다.
+
+#ifndef __SYS_INFO_H__
+#define __SYS_INFO_H__
+
+#include <calib_common.h>
+
+char *sys_info_cpu_type(void);
+char *sys_info_os_type(void);
+
+#endif
+
+다음은 include/hello.h 입니다.
+
+#ifndef __HELLO_H__
+#define __HELLO_H__
+
+#include <calib_common.h>
+
+char *say_hello(void);
+
+#endif
+
+
+
+다음은 include/calib_common.h 입니다.
+
+#ifndef __CALIB_COMMON_H__
+#define __CALIB_COMMON_H__
+
+/*
+ * system-library headers common for all sources
+ */
+
+#include <execinfo.h>
+#include <mcheck.h>
+#include <malloc.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
+#include <unistd.h>
+#include <stdint.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/fcntl.h>
+#include <sys/wait.h>
+
+
+#endif /* end of file */
+
+calib_common.h는 각 소스들에 필요한 헤더를 모두 모아놓은 헤더입니다.
+
+다음은 include/calib.h 입니다.
+
+#ifndef __CALIB_H__
+#define __CALIB_H__
+
+
+/* include all of headers of calib
+ * This file is only for calib user.
+ * Do not include this at calib source files.
+ */
+#include <calib_common.h>
+#include <hello.h>
+#include <sys_info.h>
+/* to be continue... */
+
+#endif /* end of file */
+
+calib.h는 라이브러리를 사용하는 소스들이 포함시켜야하는 헤더파일입니다. CA라이브러리의 API마다 다른 헤더 파일을 찾지 않고 calib.h 하나의 파일만 참조하도록 편의를 위해서 만든 파일입니다.
+
+다음은 test/test_hello.c 입니다.
+
+#include <calib.h>
+
+int main(void)
+{
+    printf("%s\n", say_hello());
+    return 0;
+}
+
+다음은 test/test_sys_info.c 입니다.
+
+/*********************************************************************
+ * $Id: 
+ *********************************************************************/
+
+#include <calib.h>
+
+int main(void)
+{
+    printf("== Platform information ==\n");
+    printf("Found CPU is <%s>\n", sys_info_cpu_type());
+    printf("OS is <%s>\n", sys_info_os_type());
+    printf("sizeof(int)       = %d\n", (int32_t)sizeof(int));
+    printf("sizeof(long)      = %d\n", (int32_t)sizeof(long));
+    printf("sizeof(long long) = %d\n", (int32_t)sizeof(long long));
+    return 0;
+}
+
+현재의 유닛테스트는 특별히 하는 일은 없고 단지 해당 API를 호출하는 일만 합니다. 라이브러리가 정상적으로 빌드되었는지만 확인할 수 있습니다.
+

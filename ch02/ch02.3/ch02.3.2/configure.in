@@ -1,0 +1,188 @@
+dnl # Initialize configure
+AC_INIT(calib, 1.0)
+dnl # Check required autoconf version
+
+AC_PREREQ([2.13])
+
+
+dnl # platform output file
+AC_CONFIG_HEADER([./include/platform.h])
+
+
+dnl # tools
+
+
+dnl # gawk
+AC_PROG_AWK
+
+
+dnl # nasm install check
+AC_PATH_PROG([NASM], [nasm])
+
+if test -z "$NASM"; then
+    AC_MSG_ERROR([Cannot find Netwide Assembler])
+fi
+
+dnl # nasm version check
+AC_MSG_CHECKING([whether NASM version >= 2.0 for 64bit assembly])
+${NASM} -v | grep version > nasm_version.tmp
+result=`cat nasm_version.tmp | awk '{print $3}'`
+nasm_major=`echo $result | awk -F . '{print $1}'`
+rm -f nasm_version.tmp
+
+if test "$nasm_major" -lt 2; then
+    AC_MSG_ERROR([nasm version is below than 2.0])
+else
+    AC_MSG_RESULT([yes])
+fi
+AC_SUBST(NASM)
+
+dnl # gcc install
+AC_PROG_CC
+
+if test -z "$CC"; then
+    CC=gcc
+fi
+
+dnl
+AC_MSG_CHECKING([whether GCC version >= 4.0])
+
+${CC} -v 2> gcc_version.tmp
+
+result=`grep "gcc version" gcc_version.tmp | awk '{print $3}'`
+rm -f gcc_version.tmp
+gcc_major=`echo $result | awk -F . '{print $1}'`
+gcc_minor=`echo $result | awk -F . '{print $2}'`
+gcc_minor_minor=`echo $result | awk -F . '{print $3}'`
+
+if test "$gcc_major" -ge 4 && test "$gcc_minor" -ge 0
+    then
+    AC_MSG_RESULT([yes ("$result")])
+else
+    echo "current gcc is \"${CC}\"-${gcc_major}.${gcc_minor}.${gcc_minor_minor}"
+    echo "you can define gcc as \"CC=your-gcc ./configure\""
+    AC_MSG_ERROR([current gcc version cannot process 64bit address])
+fi
+
+AC_SUBST(CC)
+
+dnl # ld support x86_64
+AC_MSG_CHECKING([whether ld supports elf_x86_64])
+
+if test -z "${LD}" ; then
+    LD=ld
+fi
+
+result=`${LD} -V | grep x86_64`
+
+if test -z "$result" ; then
+    echo "current ld is \"${LD}\""
+    echo "you can define ld as \"LD=your-ld ./configure\""
+    AC_MSG_ERROR([current ld do not support elf_x86_64, please install 64bit ld])
+else
+    AC_MSG_RESULT([yes])
+fi
+
+AC_SUBST(LD)
+
+dnl # objcopy support x86_64
+AC_MSG_CHECKING([whether objcopy supports elf64-x86-64])
+
+if test -z "$OBJCOPY" ; then
+    OBJCOPY=objcopy
+fi
+
+result=`${OBJCOPY} -h | grep elf64-x86-64`
+
+if test -z "$result" ; then
+    echo "current objcopy is \"${OBJCOPY}\""
+    echo "you can define objcopy as \"OBJCOPY=your-objcopy ./configure\""
+    AC_MSG_ERROR([current objcopy do not support elf-x86-64, please install
+                  64bit objcopy])
+else
+    AC_MSG_RESULT([yes])
+fi
+
+AC_SUBST(OBJCOPY)
+
+dnl # extra tools
+AC_PATH_PROG([DD], [dd])
+AC_PATH_PROG([NM], [nm])
+
+AC_SUBST(DD)
+AC_SUBST(NM)
+
+dnl # headers
+AC_CHECK_HEADERS(execinfo.h mcheck.h malloc.h pthread.h stdio.h stdlib.h string.h signal.h unistd.h stdint.h)
+AC_CHECK_HEADERS(sys/types.h sys/stat.h sys/fcntl.h sys/wait.h)
+
+dnl # host
+
+AC_CANONICAL_HOST()
+
+echo ""
+echo "HOST PLATFORM: ${host}"
+echo "HOST OS:       ${host_os}"
+echo "HOST CPU:      ${host_cpu}"
+echo "HOST VENDOR:   ${host_vendor}"
+echo ""
+
+CALIB_CFG_CPU="$host_cpu"
+CALIB_CFG_CPU_BIT=0
+CALIB_CFG_OS="$host_os"
+
+case "${host}" in
+    i[3456]86-* )
+		CALIB_CFG_CPU_BIT=32
+        ;;
+    amd64-*-* )
+		CALIB_CFG_CPU_BIT=64
+        ;;
+    x86_64-* )
+		CALIB_CFG_CPU_BIT=64
+        ;;
+esac
+
+
+if test -e "/etc/issue" ; then
+	id=`grep Ubuntu /etc/issue`
+fi
+
+if test -n "$id" ; then
+	# for 64bit Ubuntu
+	if test "$CALIB_CFG_CPU_BIT" = 64 ; then
+		AC_MSG_CHECKING([whether 32bit build is possible])
+		if test -e "/usr/lib32/libstdc++.so.6" ; then
+			CALIB_CFG_AVAIL_COMPILE_BIT="64 32"
+		    AC_MSG_RESULT([yes])
+		else
+			CALIB_CFG_AVAIL_COMPILE_BIT=64
+		    AC_MSG_RESULT([no])
+		fi
+	# for 32bit Ubuntu
+	else
+		CALIB_CFG_AVAIL_COMPILE_BIT=32
+	fi
+else
+	# for the other
+	CALIB_CFG_AVAIL_COMPILE_BIT=64
+fi
+
+AC_DEFINE_UNQUOTED(CALIB_CFG_OS, "$CALIB_CFG_OS")
+AC_DEFINE_UNQUOTED(CALIB_CFG_CPU_$CALIB_CFG_CPU, 1)
+AC_DEFINE_UNQUOTED(CALIB_CFG_CPU, "$CALIB_CFG_CPU")
+AC_DEFINE_UNQUOTED(CALIB_CFG_CPU_BIT_$CALIB_CFG_CPU_BIT, 1)
+AC_DEFINE_UNQUOTED(CALIB_CFG_CPU_BIT, "$CALIB_CFG_CPU_BIT")
+
+AC_SUBST(CALIB_CFG_CPU)
+AC_SUBST(CALIB_CFG_CPU_BIT)
+AC_SUBST(CALIB_CFG_AVAIL_COMPILE_BIT)
+
+ROOT_DIR=`pwd`
+AC_SUBST(ROOT_DIR)
+
+AC_CONFIG_FILES([config.mk])
+AC_OUTPUT
+
+dnl # remove temporary files
+rm -f ./config.cache ./config.log ./config.status

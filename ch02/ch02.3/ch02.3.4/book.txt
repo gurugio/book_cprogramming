@@ -1,0 +1,251 @@
+
+2단계에서는 빌드와 관련된 모든 정보를 하나의 파일에 모아서 처리해보았습니다. 그런데 아직도 하나가 각 Makefile에 남아있습니다. 바로 빌드 명령입니다. 실제로 컴파일러, 링커를 호출하는 빌드 명령이 각 Makefile에 남아있고, 누군가가 실수로, 혹은 잘 몰라서, 아니면 잠깐 급해서라도 이 명령을 손대면 전체 제품의 빌드에 문제가 생길 수 있습니다. 이번에는 아예 빌드 명령까지 분리해서 각 서브 디렉토리의 Makefile에는 이 디렉토리의 최종 산출물에 대한 정보만 저장되도록 만들어보겠습니다.
+
+예를 들어 test/Makefile는 유닛테스트를 생성합니다. 소스 파일 이름과 빌드될 실행 파일의 이름은 각 유닛테스트마다 고유한 정보이고 빌드 명령이나 옵션 등은 공통된 정보입니다. 따라서 test/Makefile에는 소스 파일 이름과 실행 파일 이름의 쌍만 나열한다면 유닛테스트를 만드는 개발자가 쉽게 유닛테스트 빌드를 추가할 수 있고, 빌드 자체에 대해서는 손댈 수 없을 것입니다. 마찬가지로 src/Makefile에는 오브젝트 파일들의 이름을 지정하고, lib/Makefile에는 라이브러리 파일의 이름만 지정해도 빌드가 되도록 한다면 빌드의 직교성을 높일 수 있습니다.
+
+
+먼저 make가 제공하는 내장 함수를 사용하는 방법과 자신만의 함수를 만드는 방법을 알아야 합니다.
+
+make의 함수는 변수 사용과 유사하게 $(함수이름 인자) 형태로 호출하게 됩니다. make의 내장 함수인 경우에는 $(basename a.c)와 같은 형태로 함수 이름을 곧바로 호출합니다. 그리고 사용자가 만든 함수를 호출할 때는 call이라는 내장 함수를 이용해서 $(call obj_template,obj)와 같이 call함수의 인자로 내가 만든 함수 이름과 함수에 전달할 인자를 지정합니다.
+
+make는 일반적인 테스트를 변환이나 파일의 이름 처리, 쉘 명령 실행 등 다양한 내장 함수를 제공합니다. 이런 내장 함수를 잘 활용하면 지능적인 빌드 처리를 만들 수 있습니다. 다음은 앞으로 예제에서 사용할 몇가지 내장 함수의 소개입니다.
+
+
+- basename
+파일 경로에서 확장자를 뺀 나머지를 얻어냅니다. a/b/c/d.txt를 전달하면 a/b/c/d를 반환합니다.
+
+- patsubst
+patsubst는 $(patsubst pattern,replacement,text)와 같은 형태로 호출됩니다. text는 원본 텍스트이고 pattern은 text에서 치환할 부분에 대한 패턴이고 replacement는 치환되서 들어갈 텍스트입니다. 흔하게 사용되는 텍스트 치환 명령중에 $(SRCS:%.c=%.o)이 있을 것입니다. SRCS에 저장된 파일 이름들 a.c b.c c.c에서 .c부분을 .o로 치환하는 명령입니다. %는 모든 형태의 텍스트를 의미하므로 확장자를 제외한 파일 이름은 치환하지 않겠다는 것을 의미합니다. 이것을 patsubst를 이용해서 만들어보면 $(patsubst %.c,%.o,a.c b.c c.c)가 됩니다. 텍스트는 a.c b.c c.c입니다. 패턴이 %.c이고 replacement가 %.o이므로 파일 이름 a b c는 그대로 유지되고 .c만이 .o로 치환됩니다.
+
+- foreach
+foreach는 $(foreach var,list,text)와 같은 형태로 호출됩니다. 주로 특정 텍스트를 반복해서 집어넣을 때 많이 사용됩니다. 우리 예제 중에 Makefile에서 다음과 같이 foreach를 사용합니다.
+
+$$Makefile 7 8
+
+$(SUB_DIRS)의 값은 src lib test이므로 dir에는 src lib test값이 한번씩 저장됩니다. 따라서 make -C src;make -C lib;make -C test가 생성됩니다.
+
+- define/endef
+사용자가 함수를 만들 때 사용하는 지시어입니다. 원래는 여러개의 변수 묶음을 하나의 변수로 정의하는 지시어인데 make가 사용자 함수와 변수를 동일하게 취급하므로 다를게 없습니다. 다음과 같은 형태로 함수를 정의할 수 있습니다.
+
+define 함수이름
+함수 본문
+endef
+
+- eval
+우리가 만든 함수를 호출하는 것은 내장함수 call입니다. call은 단순히 우리가 만든 함수를 call이 호출되는 부분에 치환하는 일만을 합니다. 따라서 우리가 만든 함수가 빌드 규칙을 만들기 위한 함수라면 call만으로는 빌드 규칙을 생성할 수 없습니다.
+
+eval을 이해하기 위해 다음과 같이 Makefile을 만들어보겠습니다.
+
+
+define ddd
+	echo "this is "$(1)
+endef
+
+all:
+    $(call ddd,a)
+
+이 Makefile을 실행하면 this is a라는 메시지가 출력됩니다. 그럼 다음과 같이 빌드 규칙을 만들어보겠습니다.
+
+define ddd
+ddd_$(1):
+	echo "this is "$(1)
+endef
+
+all: ddd_a
+
+$(call ddd,a)
+
+$(call ddd,a)가 ddd_a라는 빌드 규칙을 생성해서 this is a 메시지가 출력될 것 같지만 막상 실행해보면 에러가 발생하면서 make가 실행되지 않습니다. 다음과 같이 eval을 넣어주면 정상적으로 실행됩니다.
+
+define ddd
+ddd_$(1):
+	echo "this is "$(1)
+endef
+
+all: ddd_a
+
+$(eval $(call ddd,a))
+
+
+이정도가 예제 코드에서 사용하는 make의 내장함수입니다. 이제 예제 코드를 보겠습니다.
+
+이전 장에 작성한 calib.mk.in에 다음과 같이 빌드 관련 디렉토리 설정이 추가됩니다.
+
+$$calib.mk.in 63 72
+빌드 모드 2개와 컴파일 비트 2개를 조합하면 총 4가지 종류의 빌드가 있습니다. 빌드된 파일들이 서로 섞이지 않게 하기 위해서는 각 빌드 종류에 따라 경로를 다르게 만들어야 합니다. VARIANT 변수에 빌드 모드와 컴파일 비트의 조합을 설정합니다. 만약 디버그 모드로 64비트 빌드를 했다면 debug-64가 됩니다. 
+
+각 서브 디렉토리에서 빌드 후 생성된 파일들은 BUILD_DIR에 저장됩니다. 결론적으로 src에서 빌드된 오브젝트 파일들은 build/debug-64/src에 저장되고, lib에서 빌드된 라이브러리 파일은 build/debug-64/lib에, test에서 빌드된 유닛 테스트 실행 파일들은 build/debug-64/test에 저장됩니다.
+
+이렇게 빌드 결과물을 분리하면 소스가 저장된 디렉토리를 항상 깨끗하게 유지할 수 있게됩니다. make clean 명령을 실행할 때도 build 디렉토리만 삭제하게됩니다.
+
+다음은 빌드 명령을 모아놓은 template.mk을 보겠습니다. 이 파일은 소스를 오브젝트 파일로 빌드하는 명령과, 오브젝트 파일을 모아서 라이브러리로 만드는 명령, 유닛테스트 소스를 CALIB 라이브러리와 링크해서 실행 파일로 빌드하는 명령, 3가지 타입의 빌드템플릿을 가지고 있습니다. 각 디렉토리의 Makefile에 template.mk를 포함시키고, template.mk가 요구하는 양식에 맞게 소스 파일 이름이나 라이브러리 파일 이름을 정의하면 template.mk가 실행되면서 빌드 명령을 실행합니다. 결국 각 서브디렉토리의 Makefile에는 서브 디렉토리의 고유한 정보만을 가지게되서 각 서브디렉토리의 빌드가 독립적으로 진행되게됩니다. 빌드 명령도 template.mk에만 저장되므로 template.mk만 수정하면 프로젝트 전체의 빌드를 제어할 수 있게됩니다.
+
+
+
+$$template.mk 15 15
+오브젝트 파일의 확장자를 정의합니다.
+
+$$template.mk 16 16
+라이브러리 파일의 이름은 lib로 시작합니다.
+
+$$template.mk 17 17
+라이브러리 파일의 이름은 .a로 끝납니다.
+
+
+$$template.mk 33 36
+
+$$template.mk 71 71
+소스 파일을 오브젝트 파일로 빌드하는 obj_template 함수가 정의되어있습니다. obj_template는 특정한 이름을 함수 인자로 전달하면 이름_SRCS 변수에 저장된 소스 파일들을 빌드하는 함수입니다.
+
+현재 디렉토리가 src라고 가정하고 64비트의 디버그 모드로 빌드되는 상황에서 함수의 인자가 abc이고 abc_SRCS라는 변수에 a.c b.c c.c가 저장되어 있다고 가정하고 자세히 설명하겠습니다.
+
+/home/gurugio/calib/src/Makefile에서 obj_template가 실행되는 순간의 $(BUILD_DIR)은 /home/gurugio/calib/build/debug-64/src입니다.
+
+$(1)은 함수의 인자를 의미합니다. 인자가 abc이라면 $(1)_SRCS는 abc_SRCS로 치환됩니다. 따라서 $($(1)_SRCS)는 $(abc_SRCS)가 됩니다. $($(1)_SRCS)는 결국 a.c b.c c.c가 됩니다. 즉 소스 파일의 리스트를 의미합니다.
+
+basename는 make에서 제공하는 함수입니다. basename은 파일의 확장자를 제외한 파일 이름만을 얻어내는 일을 합니다. abc_SRCS에 저장된 파일 이름들에서 확장자를 제거하면 a b c가 됩니다.
+
+patsubst도 make에서 제공하는 함수입니다. $(patsubst pattern,replacement,text) 형태로 사용되는데 text에서 pattern의 형태에 맞는 단어를 찾아서 replacement에 맞게 변환하는 일을 합니다. 특수문자 %는 모든 문자를 의미합니다. 우리 상황에 맞게 써보면 $(patsubst %,/home/gurugio/calib/build/debug-64/%.o,a b c)로 이해할 수 있습니다. 각 파일 이름을 하나씩 replacement에 집어넣으면 /home/gurugio/calib/build/debug-64/a.o /home/gurugio/calib/build/debug-64/b.o /home/gurugio/calib/build/debug-64/c.o가 됩니다. 
+
+생성된 빌드 규칙을 정리해보면 다음과 같습니다. 오브젝트 파일이 저장될 디렉토리를 만들고, 각 소스를 컴파일해서 오브젝트 파일을 만드는 규칙이 됩니다.
+
+build_objs: /home/gurugio/calib/build/debug-64/src /home/gurugio/calib/build/debug-64/a.o /home/gurugio/calib/build/debug-64/b.o /home/gurugio/calib/build/debug-64/c.o
+
+각각의 오브젝트 파일과 오브젝트 파일이 저장될 디렉토리를 생성하는데 필요한 빌드 규칙은 template.mk파일의 아래 부분에 다음과 같이 저장되어있습니다.
+
+$$template.mk 88 92
+build_objs에 정의된 의존성에 따라 만일 build/debug-64/src라는 디렉토리가 없다면 해당 디렉토리를 생성합니다. 그리고 각각의 오브젝트 파일을 컴파일해서 build/debug-64/src 디렉토리에 저장합니다.
+
+obj_template 함수를 활용하는 src/Makefile 파일을 보면 실질적으로 어떻게 활용되는지 알 수 있습니다.
+
+$$src/Makefile 1 10
+OBJ_TARGETS는 template.mk에서 obj_template함수를 호출하는데 사용되기 때문에 항상 선언해주어야 합니다. OBJ_TARGETS변수에 자신이 만든 변수의 이름을 저장합니다. 여기에서는 calib_objs가 됩니다. 그리고 calib_objs_SRCS변수를 만들어서 소스 파일 이름들을 저장합니다.
+
+예제에서처럼 libcalib.a 파일 하나만을 생성하는게 아니라 여러개의 라이브러리 파일을 생성해야하면 각각의 라이브러리마다 소스 파일을 따로 지정해주면 됩니다. 예를 들면 다음과 비슷한 형태가 될 것입니다.
+
+OBJ_TARGETS = calib_objs another_objs
+
+calib_objs_SRCS = $(CALIB_SRCS)
+another_objs_SRCS = $(ANOTHER_SRCS)
+
+사실 calib_objs_SRCS를 따로 선언할 필요없이 calib_objs 변수를 만들어서 소스 파일 이름을 저장하고, obj_template에서는 calib_objs변수를 읽어서 처리해도 동일하게 동작합니다. 굳이 calib_objs_SRCS를 만든 이유는 소스 지정외에 다른 옵션들을 붙일 수 있도록 하기 위해서입니다. 만약 calib의 소스 중에서 cos 함수를 호출하는 코드가 있다면 소스를 빌드할 때 libm 라이브러리를 링크해야합니다. 그 외에도 특정 라이브러리나 빌드 옵션을 다음과 같이 지정할 수 있습니다.
+
+calib_objs_SRCS = $(CALIB_SRCS)
+calib_objs_LIBS = m
+calib_objs_CFLAGS = -I/usr/local/include
+
+이렇게 여러개의 변수들을 선언했다 하더라도 calib_objs라는 이름만 obj_template에 전달하면 상황에 맞게 처리할 수 있습니다. 결국 여러개의 라이브러리를 생성할 경우에 각각에 맞는 소스 이름과 컴파일 옵션, 추가 라이브러리 등 다양한 정보를 전달할 수 있습니다.
+
+template.mk에 구현된 다른 함수들도 비슷한 방식으로 변수 이름의 접두어만 전달받아서 빌드에 필요한 정보를 알아냅니다. 다음으로는 빌드된 오브젝트 파일들을 링크하는 lib_template 함수를 보겠습니다.
+
+
+$$template.mk 42 47
+
+$$template.mk 74 74
+
+다음은 lib/Makefile의 내용입니다.
+
+$$lib/Makefile 1 11
+
+lib_template함수가 호출되는 디렉토리 이름이 lib이므로 $(BUILD_DIR)은 /home/gurugio/calib/build/debug-64/lib이 됩니다. lib_template의 인자로 calib이 전달되고 calib_NAME은 calib입니다. 따라서 다음과 같이 build_libs라는 규칙이 생성됩니다.
+
+build_libs: /home/gurugio/calib/build/debug-64/lib /home/gurugio/calib/build/debug-64/lib/libcalib.a
+
+그 다음으로 calib_OBJS 변수에는 src에서 빌드된 오브젝트 파일들의 이름이 저장되어 있으므로 다음과 같이 라이브러리를 빌드하는 규칙이 생성됩니다.
+
+/home/gurugio/calib/build/debug-64/lib/libca.a: /home/gurugio/calib/build/debug-64/src/build_info.o /home/gurugio/calib/build/debug-64/src/sys_info.o
+
+lib디렉토리에서 make가 실행되면 가장 먼저 라이브러리가 저장될 /home/gurugio/calib/build/debug-64/lib 디렉토리를 생성합니다. 그리고 /home/gurugio/calib/build/debug-64/lib/libca.a 파일을 빌드합니다. build_libs의 규칙 바로 밑줄이 바로 라이브러리를 생성하는 빌드 규칙입니다. 이전에 생성된 오브젝트 파일들을 이용해서 ar명령으로 정적 라이브러리를 빌드합니다.
+
+template.mk파일에서 마지막으로 정의된 함수는 유닛테스트를 빌드하고 실행하는 unittest_template입니다. 다음은 unittest_template의 정의와 호출 코드입니다.
+
+$$template.mk 53 63
+
+$$template.mk 77 77
+
+run_unittest라는 타겟이 생성되면서 빌드된 실행파일을 저장하는 디렉토리를 만드는 것은 동일합니다. 그리고 $(1).unittest라는 파일을 만듭니다. 이 파일은 아무 내용도 없고 단순히 유닛테스트가 실행되었다는 것을 확인하는 파일입니다. 이 파일이 있다면 유닛테스트가 실행되었다는 것이므로, make 명령을 다시 내려도 동일한 유닛테스트는 실행되지 않습니다. 유닛테스트를 빌드하다가 실패한 경우에 정상적으로 실행되었던 유닛테스트가 다시 실행되서 시간을 낭비하는 일이 없도록하기위해 만들었습니다.
+
+유닛테스트 실행 파일의 빌드 규칙을 보면 의존성에 calib 라이브러리 파일이 걸려있습니다. 라이브러리 파일이 새로 빌드된 경우에 유닛테스트도 다시 실행됩니다. 빌드 명령을 보면 컴파일 명령이 아니라 링크 명령만 실행됩니다. 유닛테스트 소스 파일을 컴파일하는 일은 라이브러리 소스 파일을 빌드하는 것과 동일한 명령이 처리합니다. 의존성에 오브젝트 파일만 걸어놓으면 make가 자동으로 91~92라인에 기록한 빌드 규칙을 적용합니다.
+
+다음은 유닛테스트를 빌드하는 test/Makefile 파일의 내용입니다.
+
+$$test/Makefile 1 19
+
+test_sys_info와 test_build_info라는 2개의 실행 파일을 빌드하고자합니다. sys_info_NAME에는 실행 파일의 이름을 저장하고, sys_info_SRCS에는 소스 파일이 이름을, sys_info_LIBS에는 빌드에 필요한 라이브러리 이름을 저장합니다. 라이브러리 이름에서 lib접두어는 표준이므로 생략합니다. 확장자도 생략합니다.
+
+만약 libcalib.a라는 정적 라이브러리외에 libm.so 등의 동적 라이브러리를 링크하고 싶을 때는 src_info_SOLIBS 등의 추가 변수를 만들고, unittest_template에있는 명령에서 변수 값을 읽어서 링크하도록하면 됩니다. 필요에 따라 얼마든지 추가 정보를 전달할 수 있고, 모든 개발자들이 공유할 수 있습니다.
+
+
+다음은 clean 명령입니다.
+
+$$template.mk 97 98
+
+clean명령은 다음과 같이 간단하게 BUILD_DIR를 삭제하면 됩니다. 만약 src디렉토리에서 make clean명령을 내렸으면 src디렉토리만 삭제됩니다. 다른 디렉토리도 마찬가지 입니다. 소스의 최상위에서 make clean을 하면 build디렉토리의 바로 하위 디렉토리, 예를 들면 debug-64 디렉토리가 삭제될 것입니다.
+
+
+다음은 현재 작성된 모든 파일들의 내용입니다.
+
+Makefile 입니다.
+
+$$Makefile
+
+calib.mk.in 입니다.
+
+$$calib.mk.in
+
+config.mk.in 입니다.
+
+$$config.mk.in
+
+configure.in 입니다.
+
+$$configure.in
+
+template.mk 입니다.
+
+$$template.mk
+
+src/Makefile 입니다.
+
+$$src/Makefile
+
+src/build_info.c 입니다.
+
+$$src/build_info.c
+
+src/sys_info.c 입니다.
+
+$$src/sys_info.c
+
+include/calib.h 입니다.
+
+$$include/calib.h
+
+include/calib_common.h 입니다.
+
+$$include/calib_common.h
+
+include/platform.h.in 입니다.
+
+$$include/platform.h.in
+
+include/sys_info.h 입니다.
+
+$$include/sys_info.h
+
+lib/Makefile 입니다.
+
+$$lib/Makefile
+
+test/Makefile 입니다.
+
+$$test/Makefile
+
+test/test_build_info.c 입니다.
+
+$$test/test_build_info.c
+
+test/sys_info.c 입니다.
+
+$$test/test_sys_info.c
+

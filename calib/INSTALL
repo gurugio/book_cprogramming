@@ -1,0 +1,15 @@
+
+1. install 64bit gcc/ld/objcopy
+eg) x86_64-pc-elf-gcc, x86_64-pc-linux-ld, x86_64-pc-linux-objcopy
+
+2. modify GCC64, LD64, OBJCOPY64 variables in Makefile
+
+3. install nasm v2.0 or more recent version
+
+4. necessary utilities: gtags, nm, objdump
+
+5. run ./configure
+
+6. run make
+
+7. check floppy.img, disasm.txt system.map in image directory

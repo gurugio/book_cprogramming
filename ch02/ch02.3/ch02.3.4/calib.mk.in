@@ -1,0 +1,126 @@
+
+
+# making calib
+# There values are used by every Makefile
+# so that they are defined here.
+CALIB_SRCS = sys_info.c build_info.c
+CALIB_OBJS = $(CALIB_SRCS:.c=.o)
+
+CALIB_NAME = libca.a
+
+
+
+#
+# build option
+#
+
+# BUILD_MODE setup
+# eg) make build_mode=debug
+AVAILABLE_BUILD_MODE = debug release
+DEFAULT_BUILD_MODE = debug
+
+ifneq ($(DEFAULT_BUILD_MODE),)
+ ifeq ($(origin build_mode), undefined)
+  BUILD_MODE = $(DEFAULT_BUILD_MODE)
+ else
+  BUILD_MODE = $(filter $(build_mode), $(AVAILABLE_BUILD_MODE))
+  ifneq ($(BUILD_MODE), $(build_mode))
+   $(error Unknown build mode: $(build_mode))
+  endif
+ endif
+endif
+
+# COMPILE_BIT setup
+# eg) make compile_bit=64
+# AVAILABLE_COMPILE_BIT, DEFAULT_COMPILE_BIT are setup at config.mk
+AVAILABLE_COMPILE_BIT=@CALIB_CFG_AVAIL_COMPILE_BIT@
+DEFAULT_COMPILE_BIT=@CALIB_CFG_CPU_BIT@
+
+ifneq ($(DEFAULT_COMPILE_BIT),)
+ ifeq ($(origin compile_bit), undefined)
+  COMPILE_BIT = $(DEFAULT_COMPILE_BIT)
+ else
+  COMPILE_BIT = $(filter $(compile_bit), $(AVAILABLE_COMPILE_BIT))
+  ifneq ($(COMPILE_BIT), $(compile_bit))
+   $(error Unknown compile bit: $(compile_bit))
+  endif
+ endif
+else
+ $(error No setting for compile bit: $(DEFAULT_COMPILE_BIT))
+endif
+
+
+#
+# directory setting
+#
+SUB_DIRS = src lib test
+
+ROOT_DIR := @ROOT_DIR@
+LIB_DIR = $(ROOT_DIR)/lib
+SRC_DIR = $(ROOT_DIR)/src
+TEST_DIR = $(ROOT_DIR)/test
+
+VARIANT = $(BUILD_MODE)-$(COMPILE_BIT)
+BUILD_ROOT = $(ROOT_DIR)/build/$(VARIANT)
+
+CUR_DIR = $(shell pwd)
+WORK_DIR = $(subst $(ROOT_DIR),,$(CUR_DIR))
+# WORK_DIR starts with /
+BUILD_DIR = $(BUILD_ROOT)$(WORK_DIR)
+BUILD_DIR_SRC = $(BUILD_ROOT)/src
+BUILD_DIR_LIB = $(BUILD_ROOT)/lib
+BUILD_DIR_TEST = $(BUILD_ROOT)/test
+
+
+#
+# compile tools
+#
+CC=@CC@
+LD=@LD@
+AR=@AR@
+
+
+#
+# compile options
+#
+INCLUDES_OPT += $(ROOT_DIR)/include
+
+DEFINES_OPT += CALIB_CFG_BUILD_MODE=\"$(BUILD_MODE)\"
+
+ifeq ($(BUILD_MODE), debug)
+ DEFINES_OPT += CALIB_CFG_BUILD_MODE_DEBUG
+else
+ ifeq ($(BUILD_MODE), release)
+  DEFINES_OPT += CALIB_CFG_BUILD_MODE_RELEASE
+ endif
+endif
+
+DEFINES_OPT += CALIB_CFG_COMPILE_BIT=$(COMPILE_BIT)
+DEFINES_OPT += CALIB_CFG_COMPILE_BIT_$(COMPILE_BIT)
+
+INCLUDES = $(addprefix -I,$(INCLUDES_OPT))
+DEFINES = $(addprefix -D,$(DEFINES_OPT))
+
+CFLAGS += -Wextra -Wall
+
+ifeq ($(BUILD_MODE), debug)
+ CFLAGS += -g
+else
+ CFLAGS += -O2
+endif
+
+ifeq ($(COMPILE_BIT), 64)
+ CFLAGS += -m64
+else
+ CFLAGS += -m32
+endif
+
+ifeq ($(COMPILE_BIT), 64)
+ LD_FLAGS += -m64
+else
+ LD_FLAGS += -m32
+endif
+
+
+AR_FLAGS = sruv
+

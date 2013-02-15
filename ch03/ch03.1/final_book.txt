@@ -1,0 +1,115 @@
+
+
+테스트를 위한 입출력 값을 테이블로 정의하기
+
+
+보통 if-else가 길어지면 안좋다고 합니다. 왜냐면 비교와 분기에 사용되는 어셈블리 명령어들이 실행 속도가 느리기 때문이라고 합니다. 그리고 분기 명령어가 사용되면 캐시나 파이프라인에 영향을 줘서 코드 전체의 실행 속도를 늦춘다고 말합니다.
+
+그런데 비교나 분기에 사용되는 어셈블리 명령어들은 다른 명령어에 비해 느리지 않습니다. RISC에서는 당연하고 CISC머신에서도 명령어간의 실행 속도가 차이나던 시대는 지났습니다. 예전 i386 메뉴얼을 보면 명령어마다 실행 속도가 몇 클럭인지 표시되어있지만 최신 인텔 프로세서들은 실행속도에 대한 표시도 없어졌습니다. 명령어의 인자가 메모리를 읽어야되는 경우 메모리 읽기에 필요한 시간이 더 걸릴뿐 명령어 자체의 실행 시간은 다르지 않습니다.
+
+그리고 분기 명령이 캐시나 파이프라인에 영향을 주는 것이 맞긴 하지만 그 영향은 다른 방법으로 줄일 수 있습니다. 컴파일러들의 최적화 기법들이나 프로세서가 지원하는 분기 예측, 분기되는 지점들을 기억하는 Branch Target Buffer 등 다양한 기술들이 개발되서 분기 명령이 성능을 저하시키는 것을 줄여주고 있습니다. 성능 측정 결과 병목이 되는 코드가 아니라면 if-else가 길어진다고해서 성능상에 큰 문제가 되지 않습니다.
+
+제가 생각하는 if-else의 문제점은 코드가 유연해지지 못하게해서 변하는 것과 변하지 않는 것들이 섞여서 변하는 것들을 바꾸기 어렵게 만든다는 것입니다. 간단한 예제를 보여드리겠습니다.
+
+void handle_error0(void)
+{
+    printf("Handle Error #0\n");
+}
+void handle_error1(void)
+{
+    printf("Handle Error #1\n");
+}
+void handle_error2(void)
+{
+    printf("Handle Error #2\n");
+}
+void handle_error3(void)
+{
+    printf("Handle Error #3\n");
+}
+
+void bad_error_process(int err)
+{
+    if (err == 0)
+    {
+        handle_error0();
+    }
+    else if (err == 1)
+    {
+        handle_error1();
+    }
+    else if (err == 2)
+    {
+        handle_error2();
+    }
+    else if (err == 3)
+    {
+        handle_error3();
+    }
+    else
+    {
+        printf("Unidentified error\n");
+    }
+}
+
+
+함수를 호출하고 결과값을 확인하는 코드입니다. 특정 값마다 에러를 처리하는 함수가 따로 있어서 에러 값을 확인하고 에러 처리 함수를 호출합니다. 이정도의 if-else는 갯수도 적고, 읽기도 어렵지 않기때문에 이렇게만 작성하고 마는 경우가 많습니다. 그런데 여기에는 변하는 것과 변하지 않는 것이 섞여있습니다. 에러 코드와 에러 처리 함수는 에러 코드의 갯수가 늘어날 수도 있고 에러 처리 함수가 바뀔 수도 있기 때문에 변하는 것이고 에러 값에 따라 해당 처리 함수를 호출한다는 정책은 변하지 않는 것입니다. 에러 코드를 추가할 때는 else if를 추가해야하고, 에러 처리 함수의 이름이나 형태가 바뀌면 함수 호출 부분을 찾아서 수정해야합니다. 1번과 2번 에러 사이에 에러를 추가해서 2번 에러를 3번 에러로 바꾸려면 여러 줄의 코드를 수정해야합니다. 또 에러 처리 정책이 달라지면 코드 전체를 다시 써야할 수도 있습니다. 변하는 것이 변할수록 이 코드는 점점 더 변화하기 어렵고 위험한 코드가 될 것입니다.
+
+변하는 부분과 변하지 않는 부분을 구분한 코드를 보겠습니다.
+
+void good_error_process(int err)
+{
+    typedef struct err_table
+    {
+        int err_num;
+        void (*err_handler)(void);
+    } err_table;
+    int i;
+    err_table table[] =
+    {
+        {0, handle_error0},
+        {1, handle_error1},
+        {2, handle_error2},
+        {3, handle_error3}
+    };
+    for (i = 0; i < sizeof(table)/sizeof(err_table); i++)
+    {
+        if (err == table[i].err_num)
+            table[i].err_handler();
+    }
+    
+}
+
+
+에러 번호와 에러 처리 함수의 쌍을 따로 분리해서 관리함으로서 에러 자체에 대한 데이터와 에러를 처리하는 코드를 분리했습니다. 에러 코드나 처리 함수가 바뀔때마다 하나의 테이블만 수정하면 됩니다. 또 에러 처리 정책이 바뀌면 for 루프 부분을 수정하면 됩니다. 변화에 유연하게 대처할 수 있는 코드가 됩니다.
+
+유연성을 더 늘릴 수 있는 방법이 많을 것입니다. 다음은 테이블 자체까지도 유연해지도록 시도한 코드입니다.
+
+#define MAX_ERROR_NUM 3
+typedef struct err_table
+{
+    int err_num;
+    void (*err_handler)(void);
+} err_table;
+err_table global_err_table[MAX_ERROR_NUM+1];
+#define SETUP_ERR_TABLE(num,handler) \
+    global_err_table[num].err_num = num;                             \
+    global_err_table[num].err_handler = handler;
+#define CALL_ERR_HANDLER(num) global_err_table[num].err_handler()
+void another_error_process(int err)
+{
+    /* separate table setup and table reference */
+    SETUP_ERR_TABLE(0, handle_error0);
+    SETUP_ERR_TABLE(1, handle_error1);
+    SETUP_ERR_TABLE(2, handle_error2);
+    SETUP_ERR_TABLE(3, handle_error3);
+    CALL_ERR_HANDLER(err);
+}
+
+
+만약 에러 처리에 에러 코드와 처리 함수뿐이 아니라 추가적인 데이터가 필요하다고 한다면 에러 코드와 함수로 만들어진 테이블 구조또한 바껴야 할 것입니다. 그렇다면 good_error_process함수는 전체가 다 바뀔 수밖에 없습니다. another_error_process함수는 테이블의 설정에 대한 인터페이스를 만들었습니다. 따라서 테이블의 구조가 바뀌면 SETUP_ERR_TABLE 매크로 함수의 내부를 수정하면 되므로 another_error_process함수의 변화를 줄일 수 있습니다. 또 another_error_process함수 밖에서도 에러 테이블을 셋업할 수 있으므로 에러를 관리하기 위한 프레임이 생기기 시작합니다.
+
+이렇게 변하는 것과 변하지 않는 것을 구분하고 변하는 것을 관리하는 인터페이스를 작성하고 좀더 추상화 레벨을 높이다보면 그것 자체가 프레임웍이 되는 것을 경험할 수 있습니다. 인터페이스나 프레임웍을 만들어야할 때 너무 머리속으로만 디자인하지말고 실제로 반복적으로 사용하는 코드를 만들어보고 변하는 것과 변하지 않는 것을 구분해보는 것도 좋은 방법이라고 생각합니다.
+
+
+

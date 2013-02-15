@@ -1,0 +1,943 @@
+
+2단계에서는 빌드와 관련된 모든 정보를 하나의 파일에 모아서 처리해보았습니다. 그런데 아직도 하나가 각 Makefile에 남아있습니다. 바로 빌드 명령입니다. 실제로 컴파일러, 링커를 호출하는 빌드 명령이 각 Makefile에 남아있고, 누군가가 실수로, 혹은 잘 몰라서, 아니면 잠깐 급해서라도 이 명령을 손대면 전체 제품의 빌드에 문제가 생길 수 있습니다. 이번에는 아예 빌드 명령까지 분리해서 각 서브 디렉토리의 Makefile에는 이 디렉토리의 최종 산출물에 대한 정보만 저장되도록 만들어보겠습니다.
+
+예를 들어 test/Makefile는 유닛테스트를 생성합니다. 소스 파일 이름과 빌드될 실행 파일의 이름은 각 유닛테스트마다 고유한 정보이고 빌드 명령이나 옵션 등은 공통된 정보입니다. 따라서 test/Makefile에는 소스 파일 이름과 실행 파일 이름의 쌍만 나열한다면 유닛테스트를 만드는 개발자가 쉽게 유닛테스트 빌드를 추가할 수 있고, 빌드 자체에 대해서는 손댈 수 없을 것입니다. 마찬가지로 src/Makefile에는 오브젝트 파일들의 이름을 지정하고, lib/Makefile에는 라이브러리 파일의 이름만 지정해도 빌드가 되도록 한다면 빌드의 직교성을 높일 수 있습니다.
+
+
+먼저 make가 제공하는 내장 함수를 사용하는 방법과 자신만의 함수를 만드는 방법을 알아야 합니다.
+
+make의 함수는 변수 사용과 유사하게 $(함수이름 인자) 형태로 호출하게 됩니다. make의 내장 함수인 경우에는 $(basename a.c)와 같은 형태로 함수 이름을 곧바로 호출합니다. 그리고 사용자가 만든 함수를 호출할 때는 call이라는 내장 함수를 이용해서 $(call obj_template,obj)와 같이 call함수의 인자로 내가 만든 함수 이름과 함수에 전달할 인자를 지정합니다.
+
+make는 일반적인 테스트를 변환이나 파일의 이름 처리, 쉘 명령 실행 등 다양한 내장 함수를 제공합니다. 이런 내장 함수를 잘 활용하면 지능적인 빌드 처리를 만들 수 있습니다. 다음은 앞으로 예제에서 사용할 몇가지 내장 함수의 소개입니다.
+
+
+- basename
+파일 경로에서 확장자를 뺀 나머지를 얻어냅니다. a/b/c/d.txt를 전달하면 a/b/c/d를 반환합니다.
+
+- patsubst
+patsubst는 $(patsubst pattern,replacement,text)와 같은 형태로 호출됩니다. text는 원본 텍스트이고 pattern은 text에서 치환할 부분에 대한 패턴이고 replacement는 치환되서 들어갈 텍스트입니다. 흔하게 사용되는 텍스트 치환 명령중에 $(SRCS:%.c=%.o)이 있을 것입니다. SRCS에 저장된 파일 이름들 a.c b.c c.c에서 .c부분을 .o로 치환하는 명령입니다. %는 모든 형태의 텍스트를 의미하므로 확장자를 제외한 파일 이름은 치환하지 않겠다는 것을 의미합니다. 이것을 patsubst를 이용해서 만들어보면 $(patsubst %.c,%.o,a.c b.c c.c)가 됩니다. 텍스트는 a.c b.c c.c입니다. 패턴이 %.c이고 replacement가 %.o이므로 파일 이름 a b c는 그대로 유지되고 .c만이 .o로 치환됩니다.
+
+- foreach
+foreach는 $(foreach var,list,text)와 같은 형태로 호출됩니다. 주로 특정 텍스트를 반복해서 집어넣을 때 많이 사용됩니다. 우리 예제 중에 Makefile에서 다음과 같이 foreach를 사용합니다.
+
+all: $(SUB_DIRS)
+	$(foreach dir,$(SUB_DIRS),make -C $(dir);)
+
+$(SUB_DIRS)의 값은 src lib test이므로 dir에는 src lib test값이 한번씩 저장됩니다. 따라서 make -C src;make -C lib;make -C test가 생성됩니다.
+
+- define/endef
+사용자가 함수를 만들 때 사용하는 지시어입니다. 원래는 여러개의 변수 묶음을 하나의 변수로 정의하는 지시어인데 make가 사용자 함수와 변수를 동일하게 취급하므로 다를게 없습니다. 다음과 같은 형태로 함수를 정의할 수 있습니다.
+
+define 함수이름
+함수 본문
+endef
+
+- eval
+우리가 만든 함수를 호출하는 것은 내장함수 call입니다. call은 단순히 우리가 만든 함수를 call이 호출되는 부분에 치환하는 일만을 합니다. 따라서 우리가 만든 함수가 빌드 규칙을 만들기 위한 함수라면 call만으로는 빌드 규칙을 생성할 수 없습니다.
+
+eval을 이해하기 위해 다음과 같이 Makefile을 만들어보겠습니다.
+
+
+define ddd
+	echo "this is "$(1)
+endef
+
+all:
+    $(call ddd,a)
+
+이 Makefile을 실행하면 this is a라는 메시지가 출력됩니다. 그럼 다음과 같이 빌드 규칙을 만들어보겠습니다.
+
+define ddd
+ddd_$(1):
+	echo "this is "$(1)
+endef
+
+all: ddd_a
+
+$(call ddd,a)
+
+$(call ddd,a)가 ddd_a라는 빌드 규칙을 생성해서 this is a 메시지가 출력될 것 같지만 막상 실행해보면 에러가 발생하면서 make가 실행되지 않습니다. 다음과 같이 eval을 넣어주면 정상적으로 실행됩니다.
+
+define ddd
+ddd_$(1):
+	echo "this is "$(1)
+endef
+
+all: ddd_a
+
+$(eval $(call ddd,a))
+
+
+이정도가 예제 코드에서 사용하는 make의 내장함수입니다. 이제 예제 코드를 보겠습니다.
+
+이전 장에 작성한 calib.mk.in에 다음과 같이 빌드 관련 디렉토리 설정이 추가됩니다.
+
+VARIANT = $(BUILD_MODE)-$(COMPILE_BIT)
+BUILD_ROOT = $(ROOT_DIR)/build/$(VARIANT)
+
+CUR_DIR = $(shell pwd)
+WORK_DIR = $(subst $(ROOT_DIR),,$(CUR_DIR))
+# WORK_DIR starts with /
+BUILD_DIR = $(BUILD_ROOT)$(WORK_DIR)
+BUILD_DIR_SRC = $(BUILD_ROOT)/src
+BUILD_DIR_LIB = $(BUILD_ROOT)/lib
+BUILD_DIR_TEST = $(BUILD_ROOT)/test
+빌드 모드 2개와 컴파일 비트 2개를 조합하면 총 4가지 종류의 빌드가 있습니다. 빌드된 파일들이 서로 섞이지 않게 하기 위해서는 각 빌드 종류에 따라 경로를 다르게 만들어야 합니다. VARIANT 변수에 빌드 모드와 컴파일 비트의 조합을 설정합니다. 만약 디버그 모드로 64비트 빌드를 했다면 debug-64가 됩니다. 
+
+각 서브 디렉토리에서 빌드 후 생성된 파일들은 BUILD_DIR에 저장됩니다. 결론적으로 src에서 빌드된 오브젝트 파일들은 build/debug-64/src에 저장되고, lib에서 빌드된 라이브러리 파일은 build/debug-64/lib에, test에서 빌드된 유닛 테스트 실행 파일들은 build/debug-64/test에 저장됩니다.
+
+이렇게 빌드 결과물을 분리하면 소스가 저장된 디렉토리를 항상 깨끗하게 유지할 수 있게됩니다. make clean 명령을 실행할 때도 build 디렉토리만 삭제하게됩니다.
+
+다음은 빌드 명령을 모아놓은 template.mk을 보겠습니다. 이 파일은 소스를 오브젝트 파일로 빌드하는 명령과, 오브젝트 파일을 모아서 라이브러리로 만드는 명령, 유닛테스트 소스를 CALIB 라이브러리와 링크해서 실행 파일로 빌드하는 명령, 3가지 타입의 빌드템플릿을 가지고 있습니다. 각 디렉토리의 Makefile에 template.mk를 포함시키고, template.mk가 요구하는 양식에 맞게 소스 파일 이름이나 라이브러리 파일 이름을 정의하면 template.mk가 실행되면서 빌드 명령을 실행합니다. 결국 각 서브디렉토리의 Makefile에는 서브 디렉토리의 고유한 정보만을 가지게되서 각 서브디렉토리의 빌드가 독립적으로 진행되게됩니다. 빌드 명령도 template.mk에만 저장되므로 template.mk만 수정하면 프로젝트 전체의 빌드를 제어할 수 있게됩니다.
+
+
+
+OBJ_SUF=.o
+오브젝트 파일의 확장자를 정의합니다.
+
+LIB_PRE=lib
+라이브러리 파일의 이름은 lib로 시작합니다.
+
+LIB_SUF=.a
+라이브러리 파일의 이름은 .a로 끝납니다.
+
+
+define obj_template
+.PHONY: build_objs
+build_objs:$(BUILD_DIR) $(patsubst %,$(BUILD_DIR)/%$(OBJ_SUF),$(basename $($(1)_SRCS)))
+endef
+
+$(foreach target, $(OBJ_TARGETS), $(eval $(call obj_template,$(target))))
+소스 파일을 오브젝트 파일로 빌드하는 obj_template 함수가 정의되어있습니다. obj_template는 특정한 이름을 함수 인자로 전달하면 이름_SRCS 변수에 저장된 소스 파일들을 빌드하는 함수입니다.
+
+현재 디렉토리가 src라고 가정하고 64비트의 디버그 모드로 빌드되는 상황에서 함수의 인자가 abc이고 abc_SRCS라는 변수에 a.c b.c c.c가 저장되어 있다고 가정하고 자세히 설명하겠습니다.
+
+/home/gurugio/calib/src/Makefile에서 obj_template가 실행되는 순간의 $(BUILD_DIR)은 /home/gurugio/calib/build/debug-64/src입니다.
+
+$(1)은 함수의 인자를 의미합니다. 인자가 abc이라면 $(1)_SRCS는 abc_SRCS로 치환됩니다. 따라서 $($(1)_SRCS)는 $(abc_SRCS)가 됩니다. $($(1)_SRCS)는 결국 a.c b.c c.c가 됩니다. 즉 소스 파일의 리스트를 의미합니다.
+
+basename는 make에서 제공하는 함수입니다. basename은 파일의 확장자를 제외한 파일 이름만을 얻어내는 일을 합니다. abc_SRCS에 저장된 파일 이름들에서 확장자를 제거하면 a b c가 됩니다.
+
+patsubst도 make에서 제공하는 함수입니다. $(patsubst pattern,replacement,text) 형태로 사용되는데 text에서 pattern의 형태에 맞는 단어를 찾아서 replacement에 맞게 변환하는 일을 합니다. 특수문자 %는 모든 문자를 의미합니다. 우리 상황에 맞게 써보면 $(patsubst %,/home/gurugio/calib/build/debug-64/%.o,a b c)로 이해할 수 있습니다. 각 파일 이름을 하나씩 replacement에 집어넣으면 /home/gurugio/calib/build/debug-64/a.o /home/gurugio/calib/build/debug-64/b.o /home/gurugio/calib/build/debug-64/c.o가 됩니다. 
+
+생성된 빌드 규칙을 정리해보면 다음과 같습니다. 오브젝트 파일이 저장될 디렉토리를 만들고, 각 소스를 컴파일해서 오브젝트 파일을 만드는 규칙이 됩니다.
+
+build_objs: /home/gurugio/calib/build/debug-64/src /home/gurugio/calib/build/debug-64/a.o /home/gurugio/calib/build/debug-64/b.o /home/gurugio/calib/build/debug-64/c.o
+
+각각의 오브젝트 파일과 오브젝트 파일이 저장될 디렉토리를 생성하는데 필요한 빌드 규칙은 template.mk파일의 아래 부분에 다음과 같이 저장되어있습니다.
+
+$(BUILD_DIR):
+	mkdir -p $@
+
+$(BUILD_DIR)/%.o: %.c
+	$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) -o $@ $<
+build_objs에 정의된 의존성에 따라 만일 build/debug-64/src라는 디렉토리가 없다면 해당 디렉토리를 생성합니다. 그리고 각각의 오브젝트 파일을 컴파일해서 build/debug-64/src 디렉토리에 저장합니다.
+
+obj_template 함수를 활용하는 src/Makefile 파일을 보면 실질적으로 어떻게 활용되는지 알 수 있습니다.
+
+
+include ../calib.mk
+include $(ROOT_DIR)/config.mk
+
+
+OBJ_TARGETS      = calib_objs
+
+calib_objs_SRCS    = $(CALIB_SRCS)
+
+include $(ROOT_DIR)/template.mk
+OBJ_TARGETS는 template.mk에서 obj_template함수를 호출하는데 사용되기 때문에 항상 선언해주어야 합니다. OBJ_TARGETS변수에 자신이 만든 변수의 이름을 저장합니다. 여기에서는 calib_objs가 됩니다. 그리고 calib_objs_SRCS변수를 만들어서 소스 파일 이름들을 저장합니다.
+
+예제에서처럼 libcalib.a 파일 하나만을 생성하는게 아니라 여러개의 라이브러리 파일을 생성해야하면 각각의 라이브러리마다 소스 파일을 따로 지정해주면 됩니다. 예를 들면 다음과 비슷한 형태가 될 것입니다.
+
+OBJ_TARGETS = calib_objs another_objs
+
+calib_objs_SRCS = $(CALIB_SRCS)
+another_objs_SRCS = $(ANOTHER_SRCS)
+
+사실 calib_objs_SRCS를 따로 선언할 필요없이 calib_objs 변수를 만들어서 소스 파일 이름을 저장하고, obj_template에서는 calib_objs변수를 읽어서 처리해도 동일하게 동작합니다. 굳이 calib_objs_SRCS를 만든 이유는 소스 지정외에 다른 옵션들을 붙일 수 있도록 하기 위해서입니다. 만약 calib의 소스 중에서 cos 함수를 호출하는 코드가 있다면 소스를 빌드할 때 libm 라이브러리를 링크해야합니다. 그 외에도 특정 라이브러리나 빌드 옵션을 다음과 같이 지정할 수 있습니다.
+
+calib_objs_SRCS = $(CALIB_SRCS)
+calib_objs_LIBS = m
+calib_objs_CFLAGS = -I/usr/local/include
+
+이렇게 여러개의 변수들을 선언했다 하더라도 calib_objs라는 이름만 obj_template에 전달하면 상황에 맞게 처리할 수 있습니다. 결국 여러개의 라이브러리를 생성할 경우에 각각에 맞는 소스 이름과 컴파일 옵션, 추가 라이브러리 등 다양한 정보를 전달할 수 있습니다.
+
+template.mk에 구현된 다른 함수들도 비슷한 방식으로 변수 이름의 접두어만 전달받아서 빌드에 필요한 정보를 알아냅니다. 다음으로는 빌드된 오브젝트 파일들을 링크하는 lib_template 함수를 보겠습니다.
+
+
+define lib_template
+.PHONY: build_libs
+build_libs: $(BUILD_DIR) $(BUILD_DIR)/$(LIB_PRE)$($(1)_NAME)$(LIB_SUF)
+$(BUILD_DIR)/$(LIB_PRE)$($(1)_NAME)$(LIB_SUF): $(patsubst %,$(BUILD_DIR_SRC)/%,$($(1)_OBJS))
+	$(AR) $(AR_FLAGS) $$@ $(patsubst %,$(BUILD_DIR_SRC)/%,$($(1)_OBJS))
+endef
+
+$(foreach target, $(LIB_TARGETS), $(eval $(call lib_template,$(target))))
+
+다음은 lib/Makefile의 내용입니다.
+
+
+include ../calib.mk
+include $(ROOT_DIR)/config.mk
+
+
+LIB_TARGETS = calib
+
+calib_NAME = calib
+calib_OBJS = $(CALIB_OBJS)
+
+include $(ROOT_DIR)/template.mk
+
+lib_template함수가 호출되는 디렉토리 이름이 lib이므로 $(BUILD_DIR)은 /home/gurugio/calib/build/debug-64/lib이 됩니다. lib_template의 인자로 calib이 전달되고 calib_NAME은 calib입니다. 따라서 다음과 같이 build_libs라는 규칙이 생성됩니다.
+
+build_libs: /home/gurugio/calib/build/debug-64/lib /home/gurugio/calib/build/debug-64/lib/libcalib.a
+
+그 다음으로 calib_OBJS 변수에는 src에서 빌드된 오브젝트 파일들의 이름이 저장되어 있으므로 다음과 같이 라이브러리를 빌드하는 규칙이 생성됩니다.
+
+/home/gurugio/calib/build/debug-64/lib/libca.a: /home/gurugio/calib/build/debug-64/src/build_info.o /home/gurugio/calib/build/debug-64/src/sys_info.o
+
+lib디렉토리에서 make가 실행되면 가장 먼저 라이브러리가 저장될 /home/gurugio/calib/build/debug-64/lib 디렉토리를 생성합니다. 그리고 /home/gurugio/calib/build/debug-64/lib/libca.a 파일을 빌드합니다. build_libs의 규칙 바로 밑줄이 바로 라이브러리를 생성하는 빌드 규칙입니다. 이전에 생성된 오브젝트 파일들을 이용해서 ar명령으로 정적 라이브러리를 빌드합니다.
+
+template.mk파일에서 마지막으로 정의된 함수는 유닛테스트를 빌드하고 실행하는 unittest_template입니다. 다음은 unittest_template의 정의와 호출 코드입니다.
+
+define unittest_template
+.PHONY: run_unittest
+run_unittest: $(BUILD_DIR) $(BUILD_DIR)/$(1).unittest
+$(BUILD_DIR)/$(1).unittest: $(2) # new execute-file -> run again
+	@echo ""
+	@echo "testing [$(1)]"
+	@$(2) && touch $$@
+	@echo ""
+$(2): $(patsubst %,$(BUILD_DIR)/%$(OBJ_SUF),$(basename $($(1)_SRCS))) $(BUILD_DIR_LIB)/$(LIB_PRE)$($(1)_LIBS)
+	$(CC) $(LD_FLAGS) -o $$@ $$< $(BUILD_DIR_LIB)/$(LIB_PRE)$($(1)_LIBS)$(LIB_SUF)
+endef
+
+$(foreach target, $(UNITTEST_TARGETS), $(eval $(call unittest_template,$(target),$(BUILD_DIR)/$($(target)_NAME))))
+
+run_unittest라는 타겟이 생성되면서 빌드된 실행파일을 저장하는 디렉토리를 만드는 것은 동일합니다. 그리고 $(1).unittest라는 파일을 만듭니다. 이 파일은 아무 내용도 없고 단순히 유닛테스트가 실행되었다는 것을 확인하는 파일입니다. 이 파일이 있다면 유닛테스트가 실행되었다는 것이므로, make 명령을 다시 내려도 동일한 유닛테스트는 실행되지 않습니다. 유닛테스트를 빌드하다가 실패한 경우에 정상적으로 실행되었던 유닛테스트가 다시 실행되서 시간을 낭비하는 일이 없도록하기위해 만들었습니다.
+
+유닛테스트 실행 파일의 빌드 규칙을 보면 의존성에 calib 라이브러리 파일이 걸려있습니다. 라이브러리 파일이 새로 빌드된 경우에 유닛테스트도 다시 실행됩니다. 빌드 명령을 보면 컴파일 명령이 아니라 링크 명령만 실행됩니다. 유닛테스트 소스 파일을 컴파일하는 일은 라이브러리 소스 파일을 빌드하는 것과 동일한 명령이 처리합니다. 의존성에 오브젝트 파일만 걸어놓으면 make가 자동으로 91~92라인에 기록한 빌드 규칙을 적용합니다.
+
+다음은 유닛테스트를 빌드하는 test/Makefile 파일의 내용입니다.
+
+
+include ../calib.mk
+include $(ROOT_DIR)/config.mk
+
+
+UNITTEST_TARGETS = sys_info build_info
+
+sys_info_NAME=test_sys_info
+sys_info_SRCS=test_sys_info.c
+sys_info_LIBS=calib
+
+
+build_info_NAME=test_build_info
+build_info_SRCS=test_build_info.c
+build_info_LIBS=calib
+
+
+include $(ROOT_DIR)/template.mk
+
+
+test_sys_info와 test_build_info라는 2개의 실행 파일을 빌드하고자합니다. sys_info_NAME에는 실행 파일의 이름을 저장하고, sys_info_SRCS에는 소스 파일이 이름을, sys_info_LIBS에는 빌드에 필요한 라이브러리 이름을 저장합니다. 라이브러리 이름에서 lib접두어는 표준이므로 생략합니다. 확장자도 생략합니다.
+
+만약 libcalib.a라는 정적 라이브러리외에 libm.so 등의 동적 라이브러리를 링크하고 싶을 때는 src_info_SOLIBS 등의 추가 변수를 만들고, unittest_template에있는 명령에서 변수 값을 읽어서 링크하도록하면 됩니다. 필요에 따라 얼마든지 추가 정보를 전달할 수 있고, 모든 개발자들이 공유할 수 있습니다.
+
+
+다음은 clean 명령입니다.
+
+clean:
+	rm -rf $(BUILD_DIR)
+
+clean명령은 다음과 같이 간단하게 BUILD_DIR를 삭제하면 됩니다. 만약 src디렉토리에서 make clean명령을 내렸으면 src디렉토리만 삭제됩니다. 다른 디렉토리도 마찬가지 입니다. 소스의 최상위에서 make clean을 하면 build디렉토리의 바로 하위 디렉토리, 예를 들면 debug-64 디렉토리가 삭제될 것입니다.
+
+
+다음은 현재 작성된 모든 파일들의 내용입니다.
+
+Makefile 입니다.
+
+
+# config.mk is generated by configure
+include calib.mk
+include config.mk
+
+
+all: $(SUB_DIRS)
+	$(foreach dir,$(SUB_DIRS),make -C $(dir);)
+
+
+package:
+	make clean
+	$(foreach bit,$(AVAILABLE_COMPILE_BIT),make compile_bit=$(bit) build_mode=debug;)
+	$(foreach bit,$(AVAILABLE_COMPILE_BIT),make compile_bit=$(bit) build_mode=release;)
+
+
+include template.mk
+
+calib.mk.in 입니다.
+
+
+
+# making calib
+# There values are used by every Makefile
+# so that they are defined here.
+CALIB_SRCS = sys_info.c build_info.c
+CALIB_OBJS = $(CALIB_SRCS:.c=.o)
+
+CALIB_NAME = libca.a
+
+
+
+#
+# build option
+#
+
+# BUILD_MODE setup
+# eg) make build_mode=debug
+AVAILABLE_BUILD_MODE = debug release
+DEFAULT_BUILD_MODE = debug
+
+ifneq ($(DEFAULT_BUILD_MODE),)
+ ifeq ($(origin build_mode), undefined)
+  BUILD_MODE = $(DEFAULT_BUILD_MODE)
+ else
+  BUILD_MODE = $(filter $(build_mode), $(AVAILABLE_BUILD_MODE))
+  ifneq ($(BUILD_MODE), $(build_mode))
+   $(error Unknown build mode: $(build_mode))
+  endif
+ endif
+endif
+
+# COMPILE_BIT setup
+# eg) make compile_bit=64
+# AVAILABLE_COMPILE_BIT, DEFAULT_COMPILE_BIT are setup at config.mk
+AVAILABLE_COMPILE_BIT=@CALIB_CFG_AVAIL_COMPILE_BIT@
+DEFAULT_COMPILE_BIT=@CALIB_CFG_CPU_BIT@
+
+ifneq ($(DEFAULT_COMPILE_BIT),)
+ ifeq ($(origin compile_bit), undefined)
+  COMPILE_BIT = $(DEFAULT_COMPILE_BIT)
+ else
+  COMPILE_BIT = $(filter $(compile_bit), $(AVAILABLE_COMPILE_BIT))
+  ifneq ($(COMPILE_BIT), $(compile_bit))
+   $(error Unknown compile bit: $(compile_bit))
+  endif
+ endif
+else
+ $(error No setting for compile bit: $(DEFAULT_COMPILE_BIT))
+endif
+
+
+#
+# directory setting
+#
+SUB_DIRS = src lib test
+
+ROOT_DIR := @ROOT_DIR@
+LIB_DIR = $(ROOT_DIR)/lib
+SRC_DIR = $(ROOT_DIR)/src
+TEST_DIR = $(ROOT_DIR)/test
+
+VARIANT = $(BUILD_MODE)-$(COMPILE_BIT)
+BUILD_ROOT = $(ROOT_DIR)/build/$(VARIANT)
+
+CUR_DIR = $(shell pwd)
+WORK_DIR = $(subst $(ROOT_DIR),,$(CUR_DIR))
+# WORK_DIR starts with /
+BUILD_DIR = $(BUILD_ROOT)$(WORK_DIR)
+BUILD_DIR_SRC = $(BUILD_ROOT)/src
+BUILD_DIR_LIB = $(BUILD_ROOT)/lib
+BUILD_DIR_TEST = $(BUILD_ROOT)/test
+
+
+#
+# compile tools
+#
+CC=@CC@
+LD=@LD@
+AR=@AR@
+
+
+#
+# compile options
+#
+INCLUDES_OPT += $(ROOT_DIR)/include
+
+DEFINES_OPT += CALIB_CFG_BUILD_MODE=\"$(BUILD_MODE)\"
+
+ifeq ($(BUILD_MODE), debug)
+ DEFINES_OPT += CALIB_CFG_BUILD_MODE_DEBUG
+else
+ ifeq ($(BUILD_MODE), release)
+  DEFINES_OPT += CALIB_CFG_BUILD_MODE_RELEASE
+ endif
+endif
+
+DEFINES_OPT += CALIB_CFG_COMPILE_BIT=$(COMPILE_BIT)
+DEFINES_OPT += CALIB_CFG_COMPILE_BIT_$(COMPILE_BIT)
+
+INCLUDES = $(addprefix -I,$(INCLUDES_OPT))
+DEFINES = $(addprefix -D,$(DEFINES_OPT))
+
+CFLAGS += -Wextra -Wall
+
+ifeq ($(BUILD_MODE), debug)
+ CFLAGS += -g
+else
+ CFLAGS += -O2
+endif
+
+ifeq ($(COMPILE_BIT), 64)
+ CFLAGS += -m64
+else
+ CFLAGS += -m32
+endif
+
+ifeq ($(COMPILE_BIT), 64)
+ LD_FLAGS += -m64
+else
+ LD_FLAGS += -m32
+endif
+
+
+AR_FLAGS = sruv
+
+
+config.mk.in 입니다.
+
+# This file is set by configure
+HOST=@host@
+OS=@host_os@
+CPU=@CALIB_CFG_CPU@
+NASM=@NASM@
+CC=@CC@
+LD=@LD@
+OBJCOPY=@OBJCOPY@
+DD=@DD@
+NM=@NM@
+AR=@AR@
+
+configure.in 입니다.
+
+dnl # Initialize configure
+AC_INIT(calib, 1.0)
+dnl # Check required autoconf version
+
+AC_PREREQ([2.13])
+
+
+dnl # platform output file
+AC_CONFIG_HEADER([./include/platform.h])
+
+
+dnl # tools
+
+
+dnl # gawk
+AC_PROG_AWK
+
+
+dnl # nasm install check
+AC_PATH_PROG([NASM], [nasm])
+
+if test -z "$NASM"; then
+    AC_MSG_ERROR([Cannot find Netwide Assembler])
+fi
+
+dnl # nasm version check
+AC_MSG_CHECKING([whether NASM version >= 2.0 for 64bit assembly])
+${NASM} -v | grep version > nasm_version.tmp
+result=`cat nasm_version.tmp | awk '{print $3}'`
+nasm_major=`echo $result | awk -F . '{print $1}'`
+rm -f nasm_version.tmp
+
+if test "$nasm_major" -lt 2; then
+    AC_MSG_ERROR([nasm version is below than 2.0])
+else
+    AC_MSG_RESULT([yes])
+fi
+AC_SUBST(NASM)
+
+dnl # gcc install
+AC_PROG_CC
+
+if test -z "$CC"; then
+    CC=gcc
+fi
+
+dnl
+AC_MSG_CHECKING([whether GCC version >= 4.0])
+
+${CC} -v 2> gcc_version.tmp
+
+result=`grep "gcc version" gcc_version.tmp | awk '{print $3}'`
+rm -f gcc_version.tmp
+gcc_major=`echo $result | awk -F . '{print $1}'`
+gcc_minor=`echo $result | awk -F . '{print $2}'`
+gcc_minor_minor=`echo $result | awk -F . '{print $3}'`
+
+if test "$gcc_major" -ge 4 && test "$gcc_minor" -ge 0
+    then
+    AC_MSG_RESULT([yes ("$result")])
+else
+    echo "current gcc is \"${CC}\"-${gcc_major}.${gcc_minor}.${gcc_minor_minor}"
+    echo "you can define gcc as \"CC=your-gcc ./configure\""
+    AC_MSG_ERROR([current gcc version cannot process 64bit address])
+fi
+
+AC_SUBST(CC)
+
+dnl # ld support x86_64
+AC_MSG_CHECKING([whether ld supports elf_x86_64])
+
+if test -z "${LD}" ; then
+    LD=ld
+fi
+
+result=`${LD} -V | grep x86_64`
+
+if test -z "$result" ; then
+    echo "current ld is \"${LD}\""
+    echo "you can define ld as \"LD=your-ld ./configure\""
+    AC_MSG_ERROR([current ld do not support elf_x86_64, please install 64bit ld])
+else
+    AC_MSG_RESULT([yes])
+fi
+
+AC_SUBST(LD)
+
+dnl # objcopy support x86_64
+AC_MSG_CHECKING([whether objcopy supports elf64-x86-64])
+
+if test -z "$OBJCOPY" ; then
+    OBJCOPY=objcopy
+fi
+
+result=`${OBJCOPY} -h | grep elf64-x86-64`
+
+if test -z "$result" ; then
+    echo "current objcopy is \"${OBJCOPY}\""
+    echo "you can define objcopy as \"OBJCOPY=your-objcopy ./configure\""
+    AC_MSG_ERROR([current objcopy do not support elf-x86-64, please install
+                  64bit objcopy])
+else
+    AC_MSG_RESULT([yes])
+fi
+
+AC_SUBST(OBJCOPY)
+
+dnl # extra tools
+AC_PATH_PROG([DD], [dd])
+AC_PATH_PROG([NM], [nm])
+AC_PATH_PROG([AR], [ar])
+
+AC_SUBST(DD)
+AC_SUBST(NM)
+AC_SUBST(AR)
+
+dnl # headers
+AC_CHECK_HEADERS(execinfo.h mcheck.h malloc.h pthread.h stdio.h stdlib.h string.h signal.h unistd.h stdint.h)
+AC_CHECK_HEADERS(sys/types.h sys/stat.h sys/fcntl.h sys/wait.h)
+
+dnl # host
+
+AC_CANONICAL_HOST()
+
+echo ""
+echo "HOST PLATFORM: ${host}"
+echo "HOST OS:       ${host_os}"
+echo "HOST CPU:      ${host_cpu}"
+echo "HOST VENDOR:   ${host_vendor}"
+echo ""
+
+CALIB_CFG_CPU="$host_cpu"
+CALIB_CFG_CPU_BIT=0
+CALIB_CFG_OS="$host_os"
+
+case "${host}" in
+    i[3456]86-* )
+		CALIB_CFG_CPU_BIT=32
+        ;;
+    amd64-*-* )
+		CALIB_CFG_CPU_BIT=64
+        ;;
+    x86_64-* )
+		CALIB_CFG_CPU_BIT=64
+        ;;
+esac
+
+
+if test -e "/etc/issue" ; then
+	id=`grep Ubuntu /etc/issue`
+fi
+
+if test -n "$id" ; then
+	# for 64bit Ubuntu
+	if test "$CALIB_CFG_CPU_BIT" = 64 ; then
+		AC_MSG_CHECKING([whether 32bit build is possible])
+		if test -e "/usr/lib32/libstdc++.so.6" ; then
+			CALIB_CFG_AVAIL_COMPILE_BIT="64 32"
+		    AC_MSG_RESULT([yes])
+		else
+			CALIB_CFG_AVAIL_COMPILE_BIT=64
+		    AC_MSG_RESULT([no])
+		fi
+	# for 32bit Ubuntu
+	else
+		CALIB_CFG_AVAIL_COMPILE_BIT=32
+	fi
+else
+	# for the other
+	CALIB_CFG_AVAIL_COMPILE_BIT=64
+fi
+
+AC_DEFINE_UNQUOTED(CALIB_CFG_OS, "$CALIB_CFG_OS")
+AC_DEFINE_UNQUOTED(CALIB_CFG_CPU_$CALIB_CFG_CPU, 1)
+AC_DEFINE_UNQUOTED(CALIB_CFG_CPU, "$CALIB_CFG_CPU")
+AC_DEFINE_UNQUOTED(CALIB_CFG_CPU_BIT_$CALIB_CFG_CPU_BIT, 1)
+AC_DEFINE_UNQUOTED(CALIB_CFG_CPU_BIT, "$CALIB_CFG_CPU_BIT")
+
+AC_SUBST(CALIB_CFG_CPU)
+AC_SUBST(CALIB_CFG_CPU_BIT)
+AC_SUBST(CALIB_CFG_AVAIL_COMPILE_BIT)
+
+ROOT_DIR=`pwd`
+AC_SUBST(ROOT_DIR)
+
+AC_CONFIG_FILES([config.mk] [calib.mk])
+AC_OUTPUT
+
+dnl # remove temporary files
+rm -f ./config.cache ./config.log ./config.status
+
+template.mk 입니다.
+
+#
+# templates for all build types
+#
+
+# rules
+# OBJ_TARGETS: label that defines source files
+# LIB_TARGETS: label that defines library files
+# UNITTEST_TARGETS: label that defines unittest programs
+
+
+
+#
+# 0. naming convention
+#
+OBJ_SUF=.o
+LIB_PRE=lib
+LIB_SUF=.a
+
+
+
+#
+# 1. define howto build
+#
+
+
+# obj_template: make obj files
+# A label has object file names that will be linked together
+# so they must be built together
+# $($(1)_SRCS) is source file names
+# (patsubst %,...) make source file names into dir/obj-names format
+# eg) a.c -> build/src/a.o
+# $(1) : label name
+define obj_template
+.PHONY: build_objs
+build_objs:$(BUILD_DIR) $(patsubst %,$(BUILD_DIR)/%$(OBJ_SUF),$(basename $($(1)_SRCS)))
+endef
+
+
+
+# lib_template: link objects to generate static-library file
+# $(1) : label name
+define lib_template
+.PHONY: build_libs
+build_libs: $(BUILD_DIR) $(BUILD_DIR)/$(LIB_PRE)$($(1)_NAME)$(LIB_SUF)
+$(BUILD_DIR)/$(LIB_PRE)$($(1)_NAME)$(LIB_SUF): $(patsubst %,$(BUILD_DIR_SRC)/%,$($(1)_OBJS))
+	$(AR) $(AR_FLAGS) $$@ $(patsubst %,$(BUILD_DIR_SRC)/%,$($(1)_OBJS))
+endef
+
+
+# build unittest and run it
+# $(1): target label
+# $(2): test file name
+define unittest_template
+.PHONY: run_unittest
+run_unittest: $(BUILD_DIR) $(BUILD_DIR)/$(1).unittest
+$(BUILD_DIR)/$(1).unittest: $(2) # new execute-file -> run again
+	@echo ""
+	@echo "testing [$(1)]"
+	@$(2) && touch $$@
+	@echo ""
+$(2): $(patsubst %,$(BUILD_DIR)/%$(OBJ_SUF),$(basename $($(1)_SRCS))) $(BUILD_DIR_LIB)/$(LIB_PRE)$($(1)_LIBS)
+	$(CC) $(LD_FLAGS) -o $$@ $$< $(BUILD_DIR_LIB)/$(LIB_PRE)$($(1)_LIBS)$(LIB_SUF)
+endef
+
+
+
+#
+# 2. expand template to define build rules
+#
+# build object
+$(foreach target, $(OBJ_TARGETS), $(eval $(call obj_template,$(target))))
+
+# build library
+$(foreach target, $(LIB_TARGETS), $(eval $(call lib_template,$(target))))
+
+# build unittest program
+$(foreach target, $(UNITTEST_TARGETS), $(eval $(call unittest_template,$(target),$(BUILD_DIR)/$($(target)_NAME))))
+
+
+
+#
+# 3. implicit rules for compile sources
+#
+
+
+# .c files
+
+$(BUILD_DIR):
+	mkdir -p $@
+
+$(BUILD_DIR)/%.o: %.c
+	$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) -o $@ $<
+
+# rules for other language files can be defined here...
+
+
+clean:
+	rm -rf $(BUILD_DIR)
+
+
+
+
+src/Makefile 입니다.
+
+
+include ../calib.mk
+include $(ROOT_DIR)/config.mk
+
+
+OBJ_TARGETS      = calib_objs
+
+calib_objs_SRCS    = $(CALIB_SRCS)
+
+include $(ROOT_DIR)/template.mk
+
+src/build_info.c 입니다.
+
+/*********************************************************************
+ * $Id: 
+ *********************************************************************/
+
+#include <calib.h>
+#include <platform.h>
+
+/**
+ * return compile bit as char string
+ * @return char type string show compiled bit
+ */
+int32_t build_info_compile_bit(void)
+{
+    return CALIB_CFG_COMPILE_BIT;
+}
+
+/**
+ * return build mode as char string
+ * @return char type string show build mode
+ */
+char *build_info_build_mode(void)
+{
+    return CALIB_CFG_BUILD_MODE;
+}
+
+
+
+
+src/sys_info.c 입니다.
+
+/*********************************************************************
+ * $Id$
+ *********************************************************************/
+
+#include <sys_info.h>
+#include <platform.h>
+
+
+/**
+ * return CPU information as char string
+ * @return char type string show CPU type
+ */
+char *sys_info_cpu_type(void)
+{
+    return CALIB_CFG_CPU;
+}
+
+/**
+ * return OS information as char string
+ * @return char type string show OS type
+ */
+char *sys_info_os_type(void)
+{
+    return CALIB_CFG_OS;
+}
+
+
+
+include/calib.h 입니다.
+
+#ifndef __CALIB_H__
+#define __CALIB_H__
+
+/*
+ * system-library headers common for all sources
+ */
+
+#include <execinfo.h>
+#include <mcheck.h>
+#include <malloc.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
+#include <unistd.h>
+#include <stdint.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/fcntl.h>
+#include <sys/wait.h>
+
+
+#endif /* end of file */
+
+include/calib_common.h 입니다.
+
+#ifndef __CALIB_COMMON_H__
+#define __CALIB_COMMON_H__
+
+/*
+ * system-library headers common for all sources
+ */
+
+#include <execinfo.h>
+#include <mcheck.h>
+#include <malloc.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
+#include <unistd.h>
+#include <stdint.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/fcntl.h>
+#include <sys/wait.h>
+
+
+#endif /* end of file */
+
+include/platform.h.in 입니다.
+
+#undef CALIB_CFG_OS
+#undef CALIB_CFG_CPU_x86_64
+#undef CALIB_CFG_CPU_i386
+#undef CALIB_CFG_CPU_AMD64
+#undef CALIB_CFG_CPU
+#undef CALIB_CFG_CPU_BIT
+#undef CALIB_CFG_CPU_BIT_32
+#undef CALIB_CFG_CPU_BIT_64
+
+include/sys_info.h 입니다.
+
+#ifndef __SYS_INFO_H__
+#define __SYS_INFO_H__
+
+#include <calib.h>
+
+char *sys_info_cpu_type(void);
+int32_t build_info_compile_bit(void);
+char *build_info_build_mode(void);
+
+#endif
+
+lib/Makefile 입니다.
+
+
+include ../calib.mk
+include $(ROOT_DIR)/config.mk
+
+
+LIB_TARGETS = calib
+
+calib_NAME = calib
+calib_OBJS = $(CALIB_OBJS)
+
+include $(ROOT_DIR)/template.mk
+
+test/Makefile 입니다.
+
+
+include ../calib.mk
+include $(ROOT_DIR)/config.mk
+
+
+UNITTEST_TARGETS = sys_info build_info
+
+sys_info_NAME=test_sys_info
+sys_info_SRCS=test_sys_info.c
+sys_info_LIBS=calib
+
+
+build_info_NAME=test_build_info
+build_info_SRCS=test_build_info.c
+build_info_LIBS=calib
+
+
+include $(ROOT_DIR)/template.mk
+
+
+test/test_build_info.c 입니다.
+
+/*********************************************************************
+ * $Id: 
+ *********************************************************************/
+
+#include <calib.h>
+#include <sys_info.h>
+
+int main(void)
+{
+    printf("== Build information ==\n");
+    printf("Build mode  = %s\n", build_info_build_mode());
+    printf("Compile bit = %d\n", build_info_compile_bit());
+    return 0;
+}
+
+test/sys_info.c 입니다.
+
+/*********************************************************************
+ * $Id: 
+ *********************************************************************/
+
+#include <calib.h>
+#include <sys_info.h>
+
+int main(void)
+{
+    printf("== Platform information ==\n");
+    printf("Found CPU is <%s>\n", sys_info_cpu_type());
+    printf("sizeof(int)       = %d\n", (int32_t)sizeof(int));
+    printf("sizeof(long)      = %d\n", (int32_t)sizeof(long));
+    printf("sizeof(long long) = %d\n", (int32_t)sizeof(long long));
+
+    return 0;
+}
+

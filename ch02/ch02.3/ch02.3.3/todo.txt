@@ -1,0 +1,16 @@
+- unittest 실행하는 template작성
+- run_unittest는 잘 되는데 build_exec와 같이 실행하면 안됨.->해결할것
+- build_exec를 해결하던가 exec_template를 제거할 것 
+
+In test dir, exec target is duplicated.
+If a target is duplicated, previous one is ignored.
+Therefore if expanding of exec target is below than unittest
+expanding, unittest expanding is ignored.
+
+
+
+- src에 소스 하나 더 만들어서 여러개의 소스가 빌드되는지 테스트
+- test에 소스 하나 더 추가
+- .o -> libcalib.a -> exec -> unit-test 실행 완료 테스트
+
+
