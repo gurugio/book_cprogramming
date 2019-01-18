@@ -1,5 +1,7 @@
 = C 프로그래밍 디자인 노하우 =
 
+https://leanpub.com 에 책 등록해보자
+
 == 참고자료 ==
 https://svn.apache.org/repos/asf/harmony/enhanced/java/trunk/drlvm/vm/port/doc/PortReadme.htm
 http://apr.apache.org/docs/apr/1.4/modules.html: 여기나온 에러처리, 메모리관리 등등 소스를 참고해서 예제만들기
