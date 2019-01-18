@@ -1,59 +1,143 @@
- 1부:개발환경
-2부:C언어 개발 노하우 10개 (현재(2011/7/2) 9개니까 1개 추가하자)
-3부:C언어에서 하기쉬운 코딩 실수 유형
+= C 프로그래밍 디자인 노하우 =
+
+== 참고자료 ==
+https://svn.apache.org/repos/asf/harmony/enhanced/java/trunk/drlvm/vm/port/doc/PortReadme.htm
+http://apr.apache.org/docs/apr/1.4/modules.html: 여기나온 에러처리, 메모리관리 등등 소스를 참고해서 예제만들기
+
+
+== goto를 이용한 에러처리 ==
+  에러체크후 goto로 점프
+  자원할당의 순서 반대로 해지
+  enum으로 에러값 정의: 정상일때는 0반환, 에러일때는 !0
 
 
 
-1부. C언어를 위한 개발 환경 꾸미기
+== 분기문 갯수 줄이기 ==
 
-ch01. 	리눅스에서 개발 환경 구성하기
-ch01.1 bash를 이용하여 여러가지 플랫폼에서 공통적으로 사용할 수 있는 사용자 환경 구성하기
-ch01.2 emacs를 사용하기 위한 기본 환경 설정하기
-ch01.3 개발에 필요한 emacs의 라이브러리 소개
-ch01.4 개발에 필요한 emacs의 라이브러리 활용 예
+예제
+struct case_by_case
+{
+	int val;
+	int (*func)(int);
+}
 
-ch02.   make를 이용하여 빌드 시스템 구축하기
-ch02.1 기본 디렉토리 구조
-ch02.2 autoconf를 이용하여 플랫폼 정보를 알아내는 configure 만들기
-ch02.3 가장 기초적인 Makefile 예제
-ch02.4 make가 제공하는 매크로를 사용하는 Makefile 예제
-ch02.5 템플릿을 활용하여 대규모 프로젝트의 빌드를 관리하는 방법
-ch02.6 배포용 패키지를 만드는 방법
-ch02.7 cmake 기본 사용법
+for (cbc = cbc_list[0]; cbc; cbc = cbc->next) {
+	cbc->func(cbc->val);
+}
+
+for루프도 매크로로 정의하기: for_each_cbc(cbc)
 
 
+== 테스트 프레임웍 만들기 ==
 
-2부.C언어 개발 노하우 10개 
+테스트케이스마다 개별 파일 정의
+시작함수, 종료함수, 실행함수 만들기
+각 함수를 매크로로 등록
+INITTEST_INIT(init_testcase1)
+INITTEST_FINAL(final_testcase1)
+INITTEST_RUN(run_testcase1)
+테스트 프레임웍에서 모든 등록함수를 실행
+struct register_testcase
+{
+	int (*init)(void *);
+	int (*final)(void *);
+	int (*run)(void *);
+}
+
+for_each_testcase(...)
+	case->init(...);
+	case->run(...);
+	case->final(...);
+
+== 테스트 케이스 만들기 ==
+
+http://gurugio.blogspot.com/2010/05/data-driven-design.html
+
+if (test_func(data1) != result1) printf("error1");
+if (test_func(data2) != result2) printf("error2");
+if (test_func(data3) != result3) printf("error3");
+이런 반복을
+
+struct test_data_array
+{
+ int input_data;
+ int result_data;
+ char *error_msg;
+} test_data_array[] =
+{ 
+ {data1, result1, "1st test failed"},
+ {data2, result2, "2nd test failed"},
+ {data2, result3, "3rd test failed"}
+};
+
+for (i = 0; i < test_count; i++)
+{
+ result = test_func(test_data_array[i].input_data)
+ if (result != test_data_array[i].result_data) printf("%s\n", test_data_array[i].error_msg);
+}
+이렇게 바꾸자
 
 
-목차
+
+== cmake로 대규모 프로젝트 관리하기 ==
+각 디렉토리별로 컴파일 플래그 지정
+디버깅용 릴리즈용 빌드 구분
+설치
+bcc참고해서 만들기
+
+
+== 객체지향 흉내내기 ==
+구조체에 값,함수포인터 저장
+void *이용해서 상속흉내내기
+
+struct aaa {
+	int val;
+	int (*func)(int);
+};
+
+struct bbb {
+	struct aaa parent;
+	int val;
+	int (*func)(int);
+};
+
+int process(void *ptr)
+{
+	ptr은 aaa의 주소도 되고 bbb의 주소도된다
+	상황에 따라 aaa포인터로 써도된다
+}
+
+C언어로 C++의 string 객체 만들어보기
+구조체안에 문자열 길이,버퍼 포인터, 버퍼 크기 등의 정보 기록
+동적 선언,정적 선언, 초기화 등의 매크로 작성
+  acpStr
+
+
+== 샘플 프로젝트 ==
+시리얼번호 생성 및 인증 프로그램
+
+XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
+이런 형식의 시리얼을 만들기 위해 사용자ID,제품번호,사용기간 등등의 정보를 입력
+시리얼번호에 들어갈 정보마다 타입,핸들러 등등 지정
+만약 시리얼에 들어갈 정보가 바뀌면?
+어떻게하면 데이터와 코드를 분리할 수 있을까?
+시리얼번호의 자리수나 형태가 바뀌면?
+
+
+== 프레임웍과 플러그인을 분리하는 프로그래밍 ==
+  프레임웍은 디스크립터의 템플릿을 제공하고 플러그인은 디스크립터를 생성해서 프레임웍으로 전달
+  프레임웍은 디스크립터를 확인하여 플러그인을 실행함
+  http://gurugio.blogspot.com/2010/05/blog-post_14.html
+  리눅스 커널의 register_chrdev에서 장치 파일의 디스크립터 struct char_device_struct 데이터 생성 및 관리 방법과 struct file_operations 을 전달하는 의미 -> 예제
 
 
 
-ch03 데이터와 코드를 구분하는 프로그래밍
-ch04 프레임웍과 플러그인을 분리하는 프로그래밍
-5 함수 내부에서 에러를 처리하는 방법과 플랫폼 공통적인 에러값 정의
-6 C언어로 객체를 흉내내기
-7 C언어로 C++의 string 객체 만들기
-8 언어와 인코딩에맞게 사용자 메세지 관리
-9 유닛테스트 개발
-10 외부 툴을 사용하지 않고 간단하게 메모리 릭을 찾아내는 방법
-11 코딩 규칙을 만들고 자동화된 툴로 검사하는 방법
-
-
-챕터별 중심 내용
-
+== 추가 아이디어들 ==
 
 + 데이터와 코드를 구분하는 프로그래밍
   http://gurugio.blogspot.com/2010/05/data-driven-design.html
   예제를 뭘로 할지 결정해야함 
 
-+ 프레임웍과 플러그인을 분리하는 프로그래밍
-  프레임웍은 디스크립터의 템플릿을 제공하고 플러그인은 디스크립터를 생성해서 프레임웍으로 전달
-  프레임웍은 디스크립터를 확인하여 플러그인을 실행함
-  actPerf
-  http://gurugio.blogspot.com/2010/05/blog-post_14.html
-  리눅스 커널의 register_chrdev에서 장치 파일의 디스크립터 struct char_device_struct 데이터 생성 및 관리 방법과 struct file_operations 을 전달하는 의미 -> 예제
 
 + 함수 내부에서 에러를 처리하는 방법과 플랫폼 공통적인 에러값 정의
   http://library.gnome.org/devel/glib/stable/glib-Error-Reporting.html 참고할만한가?
@@ -109,17 +193,4 @@ ch04 프레임웍과 플러그인을 분리하는 프로그래밍
   다른 최신 C책 조사, 리눅스 시스템 프로그래밍 책 조사할것
   getopt, getopt_long
   stdint.h
-
-+ 리눅스 커널 개발 환경 꾸미기
-  qemu설정: 네트워킹, -s옵션과 gdb, 터미널 부팅, 내가 빌드한 커널로 부팅하기
-
-
-3부. C언어에서 하기쉬운 코딩 실수
-
-
-코드소나로 검출된 버그를 찾아서 유형 분석 -> 실수하기 쉬운 코드 형태나 자주하는 실수, 이렇게해야한다 등등 -- 중요!!
-
-유형이 많지 않으면 유형별로 나눠서 한 챕터씩 만들기 
-전체 내용이 너무 적으면 모두 한 챕터로 합치고 작은 챕터로 나누기
-
 
