@@ -116,6 +116,7 @@ C언어로 C++의 string 객체 만들어보기
 
 
 == 샘플 프로젝트 ==
+https://github.com/gurugio/calib_book/tree/master/ch03
 시리얼번호 생성 및 인증 프로그램
 
 XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
