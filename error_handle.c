@@ -8,6 +8,9 @@ int file_copy1(char *src, char *dst)
 	char *buf;
 	size_t total = 0;
 
+	if (src == NULL || dst == NULL)
+		return -1;
+
 	printf("copy %s to %s\n", src, dst);
 
 	fd_src = fopen(src, "r");
@@ -50,6 +53,9 @@ int file_copy2(char *src, char *dst)
 	FILE *fd_src, *fd_dst;
 	char *buf;
 	size_t total = -1;
+
+	if (src == NULL || dst == NULL)
+		goto error_src;
 
 	printf("copy %s to %s\n", src, dst);
 
