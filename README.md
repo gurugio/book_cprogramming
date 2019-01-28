@@ -1,29 +1,13 @@
 
-== 참고자료 ==
+# 참고자료
 https://svn.apache.org/repos/asf/harmony/enhanced/java/trunk/drlvm/vm/port/doc/PortReadme.htm
 http://apr.apache.org/docs/apr/1.4/modules.html: 여기나온 에러처리, 메모리관리 등등 소스를 참고해서 예제만들기
 
-
-
-
-
-
-== goto를 이용한 에러처리 ==
+# goto를 이용한 에러처리
  에러체크후 goto로 점프
  자원할당의 순서 반대로 해지
- enum으로 에러값 정의: 정상일때는 0반환, 에러일때는 !0
 
-
-
-
-
-
-
-
-
-== 분기문 갯수 줄이기 ==
-
-
+# 분기문 갯수 줄이기
 
 예제
 struct case_by_case
@@ -32,25 +16,15 @@ struct case_by_case
 	int (*func)(int);
 }
 
-
-
 for (cbc = cbc_list[0]; cbc; cbc = cbc->next) {
-	cbc->func(cbc->val);
+	if (cbc->val == val) cbc->func(cbc->val);
 }
 
+# 자주쓰는 for 루프를 간편하게
 
+for루프 매크로: for_each_cbc(cbc)
 
-for루프도 매크로로 정의하기: for_each_cbc(cbc)
-
-
-
-
-
-
-== 테스트 프레임웍 만들기 ==
-
-
-
+# 테스트 프레임웍 만들기
 테스트케이스마다 개별 파일 정의
 시작함수, 종료함수, 실행함수 만들기
 각 함수를 매크로로 등록
@@ -65,29 +39,18 @@ struct register_testcase
 	int (*run)(void *);
 }
 
-
-
 for_each_testcase(...)
 	case->init(...);
 	case->run(...);
 	case->final(...);
 
-
-
-== 테스트 케이스 만들기 ==
-
-
-
+# 테스트 케이스 만들기
 http://gurugio.blogspot.com/2010/05/data-driven-design.html
-
-
 
 if (test_func(data1) != result1) printf("error1");
 if (test_func(data2) != result2) printf("error2");
 if (test_func(data3) != result3) printf("error3");
 이런 반복을
-
-
 
 struct test_data_array
 {
@@ -110,69 +73,40 @@ if (result != test_data_array[i].result_data) printf("%s\n", test_data_array[i].
 }
 이렇게 바꾸자
 
-
-
-
-
-
-
-
-
-== cmake로 대규모 프로젝트 관리하기 ==
-각 디렉토리별로 컴파일 플래그 지정
-디버깅용 릴리즈용 빌드 구분
-설치
-bcc참고해서 만들기
-
-
-
-
-
-
-== 객체지향 흉내내기 ==
+# 객체지향 흉내내기
 구조체에 값,함수포인터 저장
 void *이용해서 상속흉내내기
 
-
-
+```
 struct aaa {
 	int val;
 	int (*func)(int);
 };
-
-
-
 struct bbb {
 	struct aaa parent;
 	int val;
 	int (*func)(int);
 };
-
-
-
 int process(void *ptr)
 {
 	ptr은 aaa의 주소도 되고 bbb의 주소도된다
 	상황에 따라 aaa포인터로 써도된다
 }
-
-
+```
 
 C언어로 C++의 string 객체 만들어보기
 구조체안에 문자열 길이,버퍼 포인터, 버퍼 크기 등의 정보 기록
 동적 선언,정적 선언, 초기화 등의 매크로 작성
- acpStr
 
+# 프레임웍과 플러그인을 분리하는 프로그래밍
+ 프레임웍은 디스크립터의 템플릿을 제공하고 플러그인은 디스크립터를 생성해서 프레임웍으로 전달
+ 프레임웍은 디스크립터를 확인하여 플러그인을 실행함
+ http://gurugio.blogspot.com/2010/05/blog-post_14.html
+ 리눅스 커널의 register_chrdev에서 장치 파일의 디스크립터 struct char_device_struct 데이터 생성 및 관리 방법과 struct file_operations 을 전달하는 의미 -> 예제
 
-
-
-
-
-== 샘플 프로젝트 ==
+# 샘플 프로젝트
 https://github.com/gurugio/calib_book/tree/master/ch03
 시리얼번호 생성 및 인증 프로그램
-
-
 
 XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
 이런 형식의 시리얼을 만들기 위해 사용자ID,제품번호,사용기간 등등의 정보를 입력
@@ -183,35 +117,11 @@ XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
 
 
 
-
-
-
-== 프레임웍과 플러그인을 분리하는 프로그래밍 ==
- 프레임웍은 디스크립터의 템플릿을 제공하고 플러그인은 디스크립터를 생성해서 프레임웍으로 전달
- 프레임웍은 디스크립터를 확인하여 플러그인을 실행함
- http://gurugio.blogspot.com/2010/05/blog-post_14.html
- 리눅스 커널의 register_chrdev에서 장치 파일의 디스크립터 struct char_device_struct 데이터 생성 및 관리 방법과 struct file_operations 을 전달하는 의미 -> 예제
-
-
-
-
-
-
-
-
-
-== 추가 아이디어들 ==
-
-
+# 추가 아이디어들
 
 + 데이터와 코드를 구분하는 프로그래밍
  http://gurugio.blogspot.com/2010/05/data-driven-design.html
  예제를 뭘로 할지 결정해야함
-
-
-
-
-
 
 + 함수 내부에서 에러를 처리하는 방법과 플랫폼 공통적인 에러값 정의
  http://library.gnome.org/devel/glib/stable/glib-Error-Reporting.html 참고할만한가?
@@ -221,22 +131,16 @@ XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
  쓰레드별 변수를 만들어서 에러가 발생했을 때 에러가 발생한 파일이름/라인번호 등을 저장하기
  linux-kernel-2.6.24의 fs/char_dev.c 파일 중, 최신 커널 소스는 다음과 같이 에러 처리 루틴을 함수 끝부분에 모아놓음 -> 예제
 
-
-
 + C언어로 객체를 흉내내기
  gtk에서 어떻게 하는지, 리눅스 커널에서는 어떻게 하는지 조사. gtk는 객체 흉내를 잘 낸 소스라고함
  동일한 기능의 모듈을 상황에 따라 골라서 사용하기
  동일하거나 유사한 데이터구조인데 약간씩 속성이 다른 경우 각각의 인스턴스를 만들어서 사용하기
  링크드 리스트에서 속성에 따라 더블,서클,락프리 등의 종류별 인스턴스 얻기
 
-
-
 + C언어로 C++의 string 객체 만들기
  구조체안에 문자열 길이,버퍼 포인터, 버퍼 크기 등의 정보 기록
  동적 선언,정적 선언, 초기화 등의 매크로 작성
  acpStr
-
-
 
 + 언어와 인코딩에맞게 사용자 메세지 관리
  언어별,character-set별로 에러 메세지 관리
@@ -246,13 +150,10 @@ XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
  로그나 에러 처리 루틴에서 활용하는 예제
  ace
 
-
-
 + 쓰레드별로 에러 번호 관리하기
  TLS만들어서 에러 번호 저장하고 쓰레드별로 에러 번호 확인하는 방법
  쓰레드 여러개 만들어서 각 쓰레드별로 다른 에러 값 반환한 후,
  쓰레드별로 에러 번호 확인해보는 예제 작성
-
 
 + 유닛테스트 개발
  무엇을, 어떻게 테스트해야하나
@@ -261,24 +162,15 @@ XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
  네트워크로 소스를 동기화해서 여러 플랫폼에서 동시에 빌드하고 테스트해서 결과를 모으기
  actTest,utilUGuard
 
-
-
 + 외부 툴을 사용하지 않고 간단하게 메모리 릭을 찾아내는 방법
  http://gurugio.blogspot.com/2010/03/refer-defensive-programming-for-red-hat.html
  이중에서 몇가지 예제 만들기
  efence, duma 조사 - 해당되는 것들인가?
 
-
-
 + 코딩 규칙을 만들고 자동화된 툴로 검사하는 방법
  함수,변수종류,매크로 등의 naming prefix 규칙
  소스 코드 검사 툴 사용하기
  Makefile 에서 실행하도록 적용하기
-
-
-
-
-
 
 + 최신 라이브러리
  다른 최신 C책 조사, 리눅스 시스템 프로그래밍 책 조사할것
