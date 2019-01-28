@@ -1,20 +1,9 @@
 
 # goto를 이용한 에러처리
- 에러체크후 goto로 점프
- 자원할당의 순서 반대로 해지
+https://github.com/gurugio/book_cprogramming/blob/master/error_handle.md
 
 # 분기문 갯수 줄이기
-
-예제
-struct case_by_case
-{
-	int val;
-	int (*func)(int);
-}
-
-for (cbc = cbc_list[0]; cbc; cbc = cbc->next) {
-	if (cbc->val == val) cbc->func(cbc->val);
-}
+https://github.com/gurugio/book_cprogramming/blob/master/long-if.md
 
 # 자주쓰는 for 루프를 간편하게
 
