@@ -12,7 +12,10 @@ struct cmd_handler chandlers[] = {
 	{'c', macro_handler_c},
 	{'d', macro_handler_d},
 	{'e', macro_handler_e}};
-  
+```
+
+
+```c
   	for (i = 0; i < sizeof(chandlers)/sizeof(chandlers[0]); i++) {
 		  if (chandlers[i].cmd == cmd) {
 			  ret = chandlers[i].handler(chandlers[i].cmd);
