@@ -168,7 +168,7 @@ int short_if(char cmd)
 		printf("Unidentified command\n");
 	return ret;
 }
-111
+```
 
 사용자 명령을 처리하는 함수가 short_if 함수로 바뀌었습니다. short_if 함수를 보면 지역변수를 선언한 부분들이 바로 (명령,코드) 집합을 만드는 부분입니다. 
 
