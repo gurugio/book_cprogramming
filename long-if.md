@@ -1,7 +1,8 @@
-길어지는 조건문
+# 길어지는 조건문
 
 어떤 프로그램이 사용자로부터 (a, b, c, d, e)중에 하나의 명령을 입력받고, 입력받은 명령이 무엇인지를 출력한다고 생각해보겠습니다. 대략 이런 코드가 될 것입니다.
 
+```
 if cmd == ‘a’
 	do_something_for_a();
 else if cmd == ‘b’
@@ -9,12 +10,13 @@ else if cmd == ‘b’
 ......(생략)
 else
 	do_error();
+```
 
 하나의 if 문이 하나의 명령어를 처리합니다. 총 5개의 명령어를 처리해야하니까 5개의 if 문을 만들고, 마지막 else는 에러처리가 되겠네요.
 
 실제로 동작하는 코드를 만들어보겠습니다.
 
-
+```c
 #include <stdio.h>
 #include <unistd.h>
 
@@ -70,7 +72,7 @@ int main(int argc, char *argv[])
 	printf("result=%d\n", long_if((char)argv[1][0]));
 	return 0;
 }
-
+```
 
 main함수는 사용자의 명령을 받아서 long_if 함수에 전달하고 long_if 함수는 if-else를 써서 각 명령에 따라 해야할 일을 합니다. switch-case문도 결국은 if-else와 같으니까 하나로 생각해도 좋습니다.
 
@@ -80,6 +82,7 @@ main함수는 사용자의 명령을 받아서 long_if 함수에 전달하고 lo
 
 물론 if-else 문 안에서 처리해야할 일들을 따로 함수로 호출한다고 해도 다음과 같이 if-else문이 길어지는 것은 피하지 못합니다.
 
+```
 if case1
 	call case1-handler
 else if case2
@@ -88,25 +91,26 @@ else if case3
 	call case3-handler
 else
 	call error-handler
+```
 
 이렇게 시간이 갈수록 길어지는 if-else 처리를 어떻게하면 간결하고, 유지보수가 편리하도록 바꿀 수 있을까요?
 
 한가지 방법은 프로그램이 지원하는 명령과 각 명령에따라 실행되야할 코드를 따로 분리해서 관리하는 것입니다.
 
 우선 두개의 필드를 가지는 구조체를 만듭니다.
-사용자가 입력한 명령
-프로그램이 실행해야할 코드
+* 사용자가 입력한 명령
+* 프로그램이 실행해야할 코드
 
 그리고 프로그램이 지원하는 명령들과 실행해야할 코드들의 짝을 미리 저장해놓습니다.
-(a, handler_a)
-(b, handler_b)
-(c, handler_c)
-(d, handler_d)
-(e, handler_e)
+* (a, handler_a)
+* (b, handler_b)
+* (c, handler_c)
+* (d, handler_d)
+* (e, handler_e)
 
 프로그램은 사용자의 입력을 받은 후에 미리 저장해놓은 (명령,코드) 집합 중에서 어떤 명령에 해당되는지를 찾아서 코드를 실행하기만 하면 됩니다. 만약 사용자가 지원되지않는 명령을 입력했다면 에러를 반환하면 됩니다.
 
-
+```
 static int handler_a(char cmd)
 {
 	printf("command is a\n");
@@ -164,7 +168,7 @@ int short_if(char cmd)
 		printf("Unidentified command\n");
 	return ret;
 }
-
+111
 
 사용자 명령을 처리하는 함수가 short_if 함수로 바뀌었습니다. short_if 함수를 보면 지역변수를 선언한 부분들이 바로 (명령,코드) 집합을 만드는 부분입니다. 
 
@@ -184,6 +188,7 @@ if-else 코드를 변하는 것과 변하지않는 것으로 나눠볼까요? �
 
 각 명령어의 핸들러 함수들을 보면 모두 같은 타입이고 이름만 다릅니다. 공통되고 반복되는 것 또한 변하지않는 것입니다. 아래처럼 변하지않는 것을 수행해주는 매크로 함수를 만들면 앞으로 새로운 명령어와 핸들러 함수를 추가할 때 좀더 편리하겠지요.
 
+```
 /* use gcc option -E to debug macro functions: gcc -e long-if.c */
 #define DEFINE_HANDLER(__cmd) static int macro_handler_##__cmd(char arg_cmd) { \
 		printf("command is %s\n", #__cmd);			\
@@ -223,12 +228,11 @@ int macro_if(char cmd)
 		printf("Unidentified command\n");
 	return ret;
 }
+```
 
-
-
-연습문제
-struct cmd_handler가 전역적으로 선언되었습니다. 이 구조체를 함수 안으로 집어넣을 수 있을까요? 만약 가능하다면 어떤 장점이 있을까요?
-struct cmd_handler chandlers[]는 함수안에서 지역변수로 정의되어서 사용되고있습니다. 함수밖에서는 사용할 수 없겠지요. 다른 코드에서도 chandlers를 사용해야한다고 가정하고, chandlers를 함수밖에서 전역변수로 정의해보세요. 같은 파일이 아니라 다른 파일에 chandlers를 정의해보세요. 다른 파일에 chandlers를 정의하면 어떤게 편리해질까요? 사용자 명령이 5개가 아니라 10개나 50개 정도가 된다면 chandlers를 어떻게 정의하는게 좋을까요?
-cmd_handler라는 구조체는 데이터의 형태를 표현한 코드입니다. 만약 데이터가 바뀌면 구조체도 바뀌어야할테고, for 루프 또한 바뀔수밖에 없습니다. 위에서 for 루프는 코드이며 바뀌지않는다고 설명했지만 for 루프 내부에 바뀔 수밖에 없는 코드가 하나 존재하는데 바로 사용자 명령과 구조체의 값을 비교하는 if (chandlers[i].cmd == cmd) 부분입니다. 이 부분을 별도의 함수로 만들어보세요. 그리고 사용자 명령의 데이터 타입을 char에서 char *로 바꿔보세요. 사용자가 ‘a’라는 한 문자를 입력하는게 아니라 “first”, “second”, “third”같은 문자열을 입력한다고 가정하고 cmd_handler 구조체를 바꾸고, if (chandlers[i].cmd == cmd) 구문을 별도의 함수로 바꿔보세요.
-DEFINE_HANDLER 매크로가 최종적으로 생성하는 코드는 gcc -E 명령으로 확인할 수 있습니다. DEFINE_HANDLER(e) 코드가 어떤 코드로 변할지 종이에 한번 써보시고 gcc -E 를 실행해서 비교해보세요.
-DEFINE_HANDLER 매크로는 함수의 바디까지 미리 정의합니다. 왜냐하면 모든 명령어 핸들러가 똑같은 일을 하기 때문입니다. 현실적으로 이런 경우는 드물겠지요. 하지만 핸들러 함수의 타입이 동일한 경우는 흔합니다. 사용자가 입력하는 데이터 타입이 동일하므로 모든 핸들러 함수가 동일한 타입의 데이터를 입력받고, 동일한 타입의 에러를 반환하기 때문입니다. DEFINE_HANDLER 매크로를 함수의 타입만 정의하도록 바꿔보세요. 그리고 각 핸들러마다 다른 함수 바디를 갖도록 고쳐보세요.
+## 연습문제
+* struct cmd_handler가 전역적으로 선언되었습니다. 이 구조체를 함수 안으로 집어넣을 수 있을까요? 만약 가능하다면 어떤 장점이 있을까요?
+* struct cmd_handler chandlers[]는 함수안에서 지역변수로 정의되어서 사용되고있습니다. 함수밖에서는 사용할 수 없겠지요. 다른 코드에서도 chandlers를 사용해야한다고 가정하고, chandlers를 함수밖에서 전역변수로 정의해보세요. 같은 파일이 아니라 다른 파일에 chandlers를 정의해보세요. 다른 파일에 chandlers를 정의하면 어떤게 편리해질까요? 사용자 명령이 5개가 아니라 10개나 50개 정도가 된다면 chandlers를 어떻게 정의하는게 좋을까요?
+* cmd_handler라는 구조체는 데이터의 형태를 표현한 코드입니다. 만약 데이터가 바뀌면 구조체도 바뀌어야할테고, for 루프 또한 바뀔수밖에 없습니다. 위에서 for 루프는 코드이며 바뀌지않는다고 설명했지만 for 루프 내부에 바뀔 수밖에 없는 코드가 하나 존재하는데 바로 사용자 명령과 구조체의 값을 비교하는 if (chandlers[i].cmd == cmd) 부분입니다. 이 부분을 별도의 함수로 만들어보세요. 그리고 사용자 명령의 데이터 타입을 char에서 char *로 바꿔보세요. 사용자가 ‘a’라는 한 문자를 입력하는게 아니라 “first”, “second”, “third”같은 문자열을 입력한다고 가정하고 cmd_handler 구조체를 바꾸고, if (chandlers[i].cmd == cmd) 구문을 별도의 함수로 바꿔보세요.
+* DEFINE_HANDLER 매크로가 최종적으로 생성하는 코드는 gcc -E 명령으로 확인할 수 있습니다. DEFINE_HANDLER(e) 코드가 어떤 코드로 변할지 종이에 한번 써보시고 gcc -E 를 실행해서 비교해보세요.
+* DEFINE_HANDLER 매크로는 함수의 바디까지 미리 정의합니다. 왜냐하면 모든 명령어 핸들러가 똑같은 일을 하기 때문입니다. 현실적으로 이런 경우는 드물겠지요. 하지만 핸들러 함수의 타입이 동일한 경우는 흔합니다. 사용자가 입력하는 데이터 타입이 동일하므로 모든 핸들러 함수가 동일한 타입의 데이터를 입력받고, 동일한 타입의 에러를 반환하기 때문입니다. DEFINE_HANDLER 매크로를 함수의 타입만 정의하도록 바꿔보세요. 그리고 각 핸들러마다 다른 함수 바디를 갖도록 고쳐보세요.
