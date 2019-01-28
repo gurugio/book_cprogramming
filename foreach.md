@@ -125,3 +125,26 @@ int main(int argc, char *argv[])
 }
 
 ```
+
+## 연습문제
+* chandlers라는 배열 이름을 cmd_handlers로 바꿔보세요. cmd_for_each 매크로를 호출할때 무엇을 어떻게 바꿔야할까요?
+* 현재 main함수는 사용자가 아무런 명령도 입력하지않았을때 "usage: ./a.out command(a|b|c|d|e)"라는 메세지를 출력합니다. 이렇게 하드코딩된 메세지는 당연히 좋지않겠지요. help()라는 함수를 하나 만들어서 main함수를 다음과 같이 바꿔보세요. help함수는 chandlers 배열을 순회하면서 프로그램이 지원하는 사용자 명령들을 출력해야합니다. cmd_for_each 매크로를 이용하세요.
+```c
+void help(struct cmd_handler *handlers)
+{
+	/* show commands that program supports: "usage: ./a.out command(a|b|c|d|e)" */
+}
+int main(int argc, char *argv[])
+{
+	char cmd;
+
+	if (argc != 2) {
+		help(&chandlers)
+		return 1;
+	}
+
+	printf("result=%d\n", macro_if_foreach((char)argv[1][0]));
+	return 0;
+}
+```
+* help 함수와 macro_if_foreach 함수를 다른 파일로 옮겨보세요. 매크로 정의들을 
