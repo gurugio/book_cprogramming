@@ -13,10 +13,13 @@ https://github.com/gurugio/book_cprogramming/blob/master/foreach.md
 테스트케이스마다 개별 파일 정의
 시작함수, 종료함수, 실행함수 만들기
 각 함수를 매크로로 등록
+```
 INITTEST_INIT(init_testcase1)
 INITTEST_FINAL(final_testcase1)
 INITTEST_RUN(run_testcase1)
+```
 테스트 프레임웍에서 모든 등록함수를 실행
+```
 struct register_testcase
 {
 	int (*init)(void *);
@@ -28,6 +31,7 @@ for_each_testcase(...)
 	case->init(...);
 	case->run(...);
 	case->final(...);
+```
 
 # 테스트 케이스 만들기
 http://gurugio.blogspot.com/2010/05/data-driven-design.html
