@@ -38,7 +38,7 @@
 
 이런 에러처리를 잘 생각하면서 의사 코드를 그대로 실제 코드로 만들어보겠습니다.
 
-```
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 
 이 두가지 패턴을 잘 생각해서 file_copy1의 에러처리를 좀더 효율적으로 바꾼게 file_copy2입니다.
 
-```
+```c
 int file_copy2(char *src, char *dst)
 {
 	FILE *fd_src, *fd_dst;
