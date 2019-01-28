@@ -1,8 +1,4 @@
 
-# 참고자료
-https://svn.apache.org/repos/asf/harmony/enhanced/java/trunk/drlvm/vm/port/doc/PortReadme.htm
-http://apr.apache.org/docs/apr/1.4/modules.html: 여기나온 에러처리, 메모리관리 등등 소스를 참고해서 예제만들기
-
 # goto를 이용한 에러처리
  에러체크후 goto로 점프
  자원할당의 순서 반대로 해지
@@ -115,6 +111,9 @@ XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
 어떻게하면 데이터와 코드를 분리할 수 있을까?
 시리얼번호의 자리수나 형태가 바뀌면?
 
+# 참고자료
+https://svn.apache.org/repos/asf/harmony/enhanced/java/trunk/drlvm/vm/port/doc/PortReadme.htm
+http://apr.apache.org/docs/apr/1.4/modules.html: 여기나온 에러처리, 메모리관리 등등 소스를 참고해서 예제만들기
 
 
 # 추가 아이디어들
