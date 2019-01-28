@@ -7,7 +7,7 @@ https://github.com/gurugio/book_cprogramming/blob/master/long-if.md
 
 # 자주쓰는 for 루프를 간편하게
 
-for루프 매크로: for_each_cbc(cbc)
+https://github.com/gurugio/book_cprogramming/blob/master/foreach.md
 
 # 테스트 프레임웍 만들기
 테스트케이스마다 개별 파일 정의
