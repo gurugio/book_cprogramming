@@ -36,11 +36,13 @@ for_each_testcase(...)
 # 테스트 케이스 만들기
 http://gurugio.blogspot.com/2010/05/data-driven-design.html
 
+```
 if (test_func(data1) != result1) printf("error1");
 if (test_func(data2) != result2) printf("error2");
 if (test_func(data3) != result3) printf("error3");
+```
 이런 반복을
-
+```
 struct test_data_array
 {
 int input_data;
@@ -52,14 +54,12 @@ char *error_msg;
 {data2, result2, "2nd test failed"},
 {data2, result3, "3rd test failed"}
 };
-
-
-
 for (i = 0; i < test_count; i++)
 {
 result = test_func(test_data_array[i].input_data)
 if (result != test_data_array[i].result_data) printf("%s\n", test_data_array[i].error_msg);
 }
+```
 이렇게 바꾸자
 
 # 객체지향 흉내내기
