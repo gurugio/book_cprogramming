@@ -12,7 +12,7 @@ https://github.com/gurugio/book_cprogramming/blob/master/foreach.md
 # 프레임웍과 플러그인을 분리하는 프로그래밍
 
 ## C언어로 C++의 string 객체 만들어보기
-https://github.com/gurugio/book_cprogramming/blob/master/string.md
+https://github.com/gurugio/book_cprogramming/blob/master/cstring.md
 
 ## 프레임웍과 플러그인은 무엇인가
 
