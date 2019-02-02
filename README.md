@@ -9,36 +9,14 @@ https://github.com/gurugio/book_cprogramming/blob/master/long-if.md
 
 https://github.com/gurugio/book_cprogramming/blob/master/foreach.md
 
-# 객체지향 흉내내기
-
-## C언어로 C++의 string 객체 만들어보기
-구조체안에 문자열 길이,버퍼 포인터, 버퍼 크기 등의 정보 기록
-동적 선언,정적 선언, 초기화 등의 매크로 작성
-
-구조체에 값,함수포인터 저장
-
-## void *이용해서 상속흉내내기
-
-```
-struct aaa {
-	int val;
-	int (*func)(int);
-};
-struct bbb {
-	struct aaa parent;
-	int val;
-	int (*func)(int);
-};
-int process(void *ptr)
-{
-	ptr은 aaa의 주소도 되고 bbb의 주소도된다
-	상황에 따라 aaa포인터로 써도된다
-}
-```
-
 # 프레임웍과 플러그인을 분리하는 프로그래밍
 
-cstring 의 유닛테스트를 만들어보자.
+## C언어로 C++의 string 객체 만들어보기
+https://github.com/gurugio/book_cprogramming/blob/master/string.md
+
+## 프레임웍과 플러그인은 무엇인가
+
+## cstring 의 유닛테스트를 만들어보자.
 
  프레임웍은 디스크립터의 템플릿을 제공하고 플러그인은 디스크립터를 생성해서 프레임웍으로 전달
  프레임웍은 디스크립터를 확인하여 플러그인을 실행함
