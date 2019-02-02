@@ -91,3 +91,7 @@ int main(void)
 	return 0;
 }
 ```
+
+## 연습문제
+
+* DEFINE_CSTRING 매크로는 정적으로 cstring 구조체의 객체를 생성합니다. 당연히 cstring 객체를 동적으로 생성해야할 경우도 있겠지요. cstring 객체를 동적으로 생성해주는 함수를 만들어보세요. 함수의 타입은 ``cstring *create_cstring(char *str, size_t max_size)``입니다.
