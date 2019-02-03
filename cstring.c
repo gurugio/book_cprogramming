@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 struct cstring {
 	char *_buf;
@@ -54,6 +55,21 @@ void cstring_print(cstring *this)
 	printf("%s\n", this->_buf);
 }
 
+cstring *create_cstring(char *str, size_t max_size)
+{
+	struct cstring *cstr = calloc(sizeof(*cstr), 1);
+	cstr->_buf = strdup(str);
+	cstr->_len = strlen(str);
+	cstr->_max_size = max_size;
+	cstr->clear = cstring_clear;
+	cstr->length = cstring_length;
+	cstr->max_size = cstring_max_size;
+	cstr->at = cstring_at;
+	cstr->print = cstring_print;
+	cstr->debug = cstring_debug;
+	return cstr;
+}
+
 #define DEFINE_CSTRING(__name, __buf)				\
 	struct cstring __name = {						\
 		._buf = strdup(__buf),						\
@@ -69,6 +85,7 @@ void cstring_print(cstring *this)
 int main(void)
 {
 	char abcd[155] = "abcd";
+	cstring *bbb;
 	DEFINE_CSTRING(aaa, abcd);
 
 	aaa.debug(&aaa);
@@ -82,5 +99,9 @@ int main(void)
 	printf("%zu\n", aaa.length(&aaa));
 	printf("%zu\n", aaa.max_size(&aaa));
 	printf("%c\n", aaa.at(&aaa, 2));
+
+	bbb = create_cstring("asdf", 10);
+	bbb->debug(bbb);
+	
 	return 0;
 }
