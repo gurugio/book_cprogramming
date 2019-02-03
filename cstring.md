@@ -220,7 +220,7 @@ int main(void)
 	printf("%c\n", aaa->at(aaa, 2));
 	return 0;
 }
-``
+```
 
 이렇게 cstring 관련 메소드들을 외부에서 호출하지못하도록 구현하면 cstring이 클래스가 아니라 namespace의 역할을 하게됩니다. cstring 객체를 만드는게 중요한게 아니라 어떤 데이터와 함수들을 하나의 namespace에 모아놓고, 반드시 정해진 인터페이스(cstring객체의 메소드)를 통해서만 해당 데이터와 함수들을 이용하도록 만들게됩니다. 
 
