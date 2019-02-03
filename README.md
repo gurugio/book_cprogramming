@@ -10,12 +10,12 @@ https://github.com/gurugio/book_cprogramming/blob/master/long-if.md
 
 https://github.com/gurugio/book_cprogramming/blob/master/foreach.md
 
-# 프레임웍과 플러그인을 분리하는 프로그래밍
+# 인터페이스과 플러그인을 분리하는 프로그래밍
 
 ## C언어로 C++의 string 객체 만들어보기
 https://github.com/gurugio/book_cprogramming/blob/master/cstring.md
 
-## 프레임웍과 플러그인은 무엇인가
+## 인터페이스과 플러그인은 무엇인가
 
 ## cstring 의 유닛테스트를 만들어보자.
 
@@ -24,7 +24,7 @@ https://github.com/gurugio/book_cprogramming/blob/master/cstring.md
  http://gurugio.blogspot.com/2010/05/blog-post_14.html
  리눅스 커널의 register_chrdev에서 장치 파일의 디스크립터 struct char_device_struct 데이터 생성 및 관리 방법과 struct file_operations 을 전달하는 의미 -> 예제
  
-## 테스트 프레임웍 만들기
+## 테스트 인터페이스 만들기
 테스트케이스마다 개별 파일 정의
 시작함수, 종료함수, 실행함수 만들기
 각 함수를 매크로로 등록
@@ -48,7 +48,7 @@ for_each_testcase(...)
 	case->final(...);
 ```
 
-## 테스트 케이스 만들기
+## 테스트 플러그인 만들기
 http://gurugio.blogspot.com/2010/05/data-driven-design.html
 
 ```
