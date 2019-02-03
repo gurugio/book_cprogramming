@@ -16,6 +16,7 @@ https://github.com/gurugio/book_cprogramming/blob/master/foreach.md
 https://github.com/gurugio/book_cprogramming/blob/master/cstring.md
 
 ## 인터페이스과 플러그인은 무엇인가
+https://github.com/gurugio/book_cprogramming/blob/master/interface.md
 
 ## cstring 의 유닛테스트를 만들어보자.
 
