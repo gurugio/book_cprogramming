@@ -183,9 +183,10 @@ static void cstring_print(cstring *this)
 	printf("%s\n", this->_buf);
 }
 
+
 cstring *create_cstring(char *str, size_t max_size)
 {
-	struct cstring *cstr = calloc(1, sizeof(*cstr));
+	struct cstring *cstr = calloc(sizeof(*cstr), 1);
 	cstr->_buf = strdup(str);
 	cstr->_len = strlen(str);
 	cstr->_max_size = max_size;
@@ -206,17 +207,17 @@ int main(void)
 	char abcd[155] = "abcd";
 	cstring *aaa = create_cstring(abcd, 155);
 
-	aaa.debug(aaa);
-	aaa.print(aaa);
-	printf("%zu\n", aaa.length(aaa));
-	printf("%zu\n", aaa.max_size(aaa));
-	printf("%c\n", aaa.at(aaa, 2));
+	aaa->debug(aaa);
+	aaa->print(aaa);
+	printf("%zu\n", aaa->length(aaa));
+	printf("%zu\n", aaa->max_size(aaa));
+	printf("%c\n", aaa->at(aaa, 2));
 
-	aaa.clear(aaa);
-	aaa.debug(aaa);
-	printf("%zu\n", aaa.length(aaa));
-	printf("%zu\n", aaa.max_size(aaa));
-	printf("%c\n", aaa.at(aaa, 2));
+	aaa->clear(aaa);
+	aaa->debug(aaa);
+	printf("%zu\n", aaa->length(aaa));
+	printf("%zu\n", aaa->max_size(aaa));
+	printf("%c\n", aaa->at(aaa, 2));
 	return 0;
 }
 ``
