@@ -6,11 +6,13 @@
 
 ![interface and plug-in of cstring](/interface.png)
 
-cstring에서 인터페이스는 cstring 구조체에 저장된 함수 포인터입니다.
+그림에서 보는 것과 같이 cstring 구조체에 저장된 함수 포인터가 인터페이스입니다.
 * cstring.clear
 * cstring.at
 
-그리고 플러그인은 cstring.c 파일에 구현된 각 함수들입니다.
+인터페이스는 플러그인에서 특정한 틀을 제공합니다. 플러그인은 이 틀에 맞춰서 서비스를 제공해야합니다.
+
+cstring.c 파일에 구현된 각 함수들이 바로 플러그인이 됩니다.
 * cstring_clear
 * cstring_at
 
