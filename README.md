@@ -18,6 +18,11 @@ https://github.com/gurugio/book_cprogramming/blob/master/cstring.md
 ## 인터페이스과 플러그인은 무엇인가
 https://github.com/gurugio/book_cprogramming/blob/master/interface.md
 
+## 유닛테스트 프레임웍
+
+https://github.com/gurugio/book_cprogramming/blob/master/unittest.md
+
+
 ## cstring 의 유닛테스트를 만들어보자.
 
  프레임웍은 디스크립터의 템플릿을 제공하고 플러그인은 디스크립터를 생성해서 프레임웍으로 전달
