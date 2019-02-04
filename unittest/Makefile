@@ -4,7 +4,7 @@ UNITTEST = unittest.c unittest_main.c
 # add target source
 LIB_SOURCES = cstring.c
 # add unittest case
-UNITTEST_CASES = unittest_cstring.c
+UNITTEST_CASES = unittest_dummy.c unittest_cstring.c
 
 
 all: $(LIB_SOURCES:.c=.o) $(UNITTEST:.c=.o) $(UNITTEST_CASES:.c=.o)
