@@ -4,6 +4,8 @@
 
 인터페이스는 프로그램에서 계층과 계층간의 호출 규칙입니다. 플러그인은 인터페이스의 구현입니다. cstring을 만들어본 이유는 바로 인터페이스와 플러그인의 예제를 보여드리기 위해서입니다.
 
+![interface and plug-in of cstring](/interface.png)
+
 cstring에서 인터페이스는 cstring 구조체에 저장된 함수 포인터입니다.
 * cstring.clear
 * cstring.at
@@ -13,8 +15,6 @@ cstring에서 인터페이스는 cstring 구조체에 저장된 함수 포인터
 * cstring_at
 
 다시 설명하면 cstring 구조체에있는 함수 포인터들은 cstring이라는 계층 혹은 모듈이 어떤 인터페이스를 main함수에 제공할지를 알려주는 역할을 합니다. main함수는 cstring 구조체에있는 함수 포인터만을 보고 함수들을 호출할 수 있습니다.
-
-
 
 cstring.c에는 각 함수들이 구현되어있습니다. 이 것들이 플러그인입니다. main함수에서는 cstring.c에있는 플러그인이 보이지도않고 접근할 수도 없습니다. 오직 cstring 구조체를 통해서만 플러그인에 접근할 수 있습니다.
 
