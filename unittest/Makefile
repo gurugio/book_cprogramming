@@ -1,3 +1,4 @@
+# common for all
 UNITTEST = unittest.c unittest_main.c
 
 # add target source
