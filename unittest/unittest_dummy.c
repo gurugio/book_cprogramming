@@ -40,7 +40,4 @@ struct unittest test_dummy = {
 	.priv = &pdata,
 };
 
-DEFINE_UNITTEST(dummy)
-{
-	register_test("dummy", &test_dummy);
-}
+DEFINE_UNITTEST(dummy, test_dummy)
