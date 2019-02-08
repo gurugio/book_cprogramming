@@ -108,6 +108,13 @@ DEFINE_UNITTEST(dummy, test_dummy)
 
 DEFINE_UNITTEST는 dummy라는 이름의 유닛테스트를 등록합니다. dummy라는 유닛테스트가 실행할 함수들은 test_dummy_init, test_dummy_final, test_dummy_run이고, 이 3개 함수가 공통으로 가지는 데이터는 pdata입니다.
 
+### unittest.c 파일
+
+
+
+### unittest_main.c 파일
+
+
 
 ## 연습문제
 
