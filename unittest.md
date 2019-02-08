@@ -3,6 +3,8 @@
 ## 유닛테스트를 위한 프레임웍 만들기
 
 
+![unittest interface and dummy plugin](/unittest_dummy.png)
+
 ```
 
 
