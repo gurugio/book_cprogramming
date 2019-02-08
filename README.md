@@ -25,37 +25,9 @@ https://github.com/gurugio/book_cprogramming/blob/master/unittest.md
 
 ## cstring 의 유닛테스트를 만들어보자.
 
- 프레임웍은 디스크립터의 템플릿을 제공하고 플러그인은 디스크립터를 생성해서 프레임웍으로 전달
- 프레임웍은 디스크립터를 확인하여 플러그인을 실행함
- http://gurugio.blogspot.com/2010/05/blog-post_14.html
- 리눅스 커널의 register_chrdev에서 장치 파일의 디스크립터 struct char_device_struct 데이터 생성 및 관리 방법과 struct file_operations 을 전달하는 의미 -> 예제
  
-## 테스트 인터페이스 만들기
-테스트케이스마다 개별 파일 정의
-시작함수, 종료함수, 실행함수 만들기
-각 함수를 매크로로 등록
-```
-INITTEST_INIT(init_testcase1)
-INITTEST_FINAL(final_testcase1)
-INITTEST_RUN(run_testcase1)
-```
-테스트 프레임웍에서 모든 등록함수를 실행
-```
-struct register_testcase
-{
-	int (*init)(void *);
-	int (*final)(void *);
-	int (*run)(void *);
-}
+## 테스트 케이스를 간편하게
 
-for_each_testcase(...)
-	case->init(...);
-	case->run(...);
-	case->final(...);
-```
-
-## 테스트 플러그인 만들기
-http://gurugio.blogspot.com/2010/05/data-driven-design.html
 
 ```
 if (test_func(data1) != result1) printf("error1");
