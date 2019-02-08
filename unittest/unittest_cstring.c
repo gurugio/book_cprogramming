@@ -42,7 +42,4 @@ struct unittest test_cstring = {
 	.priv = &pdata,
 };
 
-DEFINE_UNITTEST(cstring)
-{
-	register_test("cstring", &test_cstring);
-}
+DEFINE_UNITTEST(cstring, test_cstring)
