@@ -7,13 +7,6 @@ struct unittest {
 	void *priv;
 };
 
-struct unittest_set {
-	#define SET_MAX 256
-	int count;
-	char *names[SET_MAX];
-	struct unittest *tests[SET_MAX];
-};
-
 #define DEFINE_UNITTEST(__name, __struct_unittest)	\
 	void register_##__name(void) {					\
 		register_test(#__name, &__struct_unittest);	\
