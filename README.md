@@ -1,7 +1,9 @@
 # Professional C programming tips
 
-# goto를 이용한 에러처리
-https://github.com/gurugio/book_cprogramming/blob/master/error_handle.md
+## 목차
+
+* [goto를 이용한 에러처리](error_handle.md)
+
 
 # 분기문 갯수 줄이기
 https://github.com/gurugio/book_cprogramming/blob/master/long-if.md
