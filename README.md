@@ -4,7 +4,7 @@
 
 * [goto를 이용한 에러처리](error_handle.md)
 * [분기문 갯수 줄이기](long-if.md)
-* [자주쓰는 for 루프를 간편하게](foreach.md
+* [자주쓰는 for 루프를 간편하게](foreach.md)
 * 인터페이스과 플러그인을 분리하는 프로그래밍
   * [C언어로 C++의 string 객체 만들어보기](cstring.md)
   * [인터페이스과 플러그인은 무엇인가](interface.md)
