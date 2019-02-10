@@ -20,7 +20,7 @@ C프로그래밍을 실무로 쓴 기간은 12년, 처음 접한 후부터로 �
   * [C언어로 C++의 string 객체 만들어보기](cstring.md)
   * [인터페이스과 플러그인은 무엇인가](interface.md)
   * [유닛테스트 프레임웍](unittest.md)
-  * [cstring의 유닛테스트](
+  * [cstring의 유닛테스트](unittest_cstring.md)
  
 ## 테스트 케이스를 간편하게
 
