@@ -108,9 +108,49 @@ DEFINE_UNITTEST(dummy, test_dummy)
 
 DEFINE_UNITTEST는 dummy라는 이름의 유닛테스트를 등록합니다. dummy라는 유닛테스트가 실행할 함수들은 test_dummy_init, test_dummy_final, test_dummy_run이고, 이 3개 함수가 공통으로 가지는 데이터는 pdata입니다.
 
-### unittest.c 파일
+### unittest.h, unittest.c 파일
+
+그럼 이제 유닛테스트 프레임웍의 코드를 보겠습니다.
+
+다음은 unittest.h 파일입니다. 유닛테스트가 어떤 인터페이스를 제공하는지를 알아볼 수 있습니다.
+```
+#include <stdio.h>
+
+struct unittest {
+	int (*init)(void *);
+	int (*final)(void *);
+	int (*run)(void *);
+	void *priv;
+};
+
+#define DEFINE_UNITTEST(__name, __struct_unittest)	\
+	void register_##__name(void) {					\
+		register_test(#__name, &__struct_unittest);	\
+	}
+
+#define REGISTER_UNITTEST(__name)    \
+	void register_##__name(void);	 \
+	register_##__name()
+
+int register_test(char *name, struct unittest *test);
+int run_test(void);
+```
+
+가장 먼저 보이는게 unittest라는 구조체입니다. 위에 unittest_dummy.c에서 봤듯이 각각의 유닛테스트를 등록할 때 사용되는 구조체입니다.
+* init: 테스트를 시작하기전에 준비할 것들을 실행
+* final: 테스트가 끝난 후 마무리
+* run: 테스트 실행
+
+DEFINE_UNITTEST 매크로 함수도 보입니다. 2개의 인자를 가집니다.
+* ``__name``: 유닛테스트의 이름
+* ``__struct_unittest``: 유닛테스트가 등록하고자하는 struct unittest 객체의 이름
+
+DEFINE_UNITTEST 매크로는 실제로는 register_test 함수를 추상화하는 wrapper입니다. 
 
 
+```
+
+```
 
 ### unittest_main.c 파일
 
@@ -120,5 +160,5 @@ DEFINE_UNITTEST는 dummy라는 이름의 유닛테스트를 등록합니다. dum
 
 * test_dummy_run은 테스트가 실패하던 성공하던 상관없이 0만 반환합니다. 만약 테스트가 성공하면 0을, 실패하면 -1을 반환하도록 고쳐보세요.
 * test_dummy_run의 반환값이 달라졌으니 unittest.c에서 run_test 함수도 반환값을 체크하도록 수정해야합니다. node->test->run을 실행한 후 반환값을 확인해서 테스트가 성공이면 "OK" 메세지를 출력하고, 실패하면 "FAIL" 메세지를 출력하도록 고쳐보세요.
-
+* unittest.c에서 struct test_node의 리스트를 생성해서 각 유닛테스트를 관리합니다. 하나의 유닛테스트가 등록될때마다 하나의 리스트 노드가 추가됩니다. 그런데 프로그램이 끝날때 리스트를 해지하는 코드가 없습니다. run_test 함수 마지막에 리스트 노드들의 메모리를 해지하는 코드를 추가해보세요.
 
