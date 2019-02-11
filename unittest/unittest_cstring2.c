@@ -48,21 +48,28 @@ static int test_cstring_run(void *priv)
 	return 0;
 }
 
-#define CHECK_TEST(__test, __compare, __msg) \
-	if (
+#define CHECK_TEST(__condition, __msg) ({ \
+			int ____ret_error = !!(__condition);						\
+			if (____ret_error) printf("<%s:%d> %s\n",					\
+									  __FILE__, __LINE__, __msg);		\
+		})
+
+	
 static int test_cstring_run_macro(void *priv)
 {
 	struct priv_data *data = priv;
 	cstring *cstr = data->cstr;
 	printf("\ttest_cstring_run\n");
 
-
+	CHECK_TEST(cstr->length(cstr) != 16, "length failed\n");
+	CHECK_TEST(cstr->length(cstr) == 16, "length ok\n");
+	return 0;
 }
 
 static struct unittest test_cstring2 = {
 	.init = test_cstring_init,
 	.final = test_cstring_final,
-	.run = test_cstring_run,
+	.run = test_cstring_run_macro,
 	.priv = &pdata,
 };
 
