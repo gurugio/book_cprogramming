@@ -21,8 +21,7 @@ C프로그래밍을 실무로 쓴 기간은 12년, 처음 접한 후부터로 �
   * [인터페이스과 플러그인은 무엇인가](interface.md)
   * [유닛테스트 프레임웍](unittest.md)
   * [cstring의 유닛테스트](unittest_cstring.md)
- 
-## 테스트 케이스를 간편하게
+  * [테스트 케이스를 간편하게](unittest_cstring2.md)
 
 http://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html#Statement-Exprs
 
