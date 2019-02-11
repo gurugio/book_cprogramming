@@ -24,6 +24,8 @@ C프로그래밍을 실무로 쓴 기간은 12년, 처음 접한 후부터로 �
  
 ## 테스트 케이스를 간편하게
 
+http://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html#Statement-Exprs
+
 ```
 if (test_func(data1) != result1) printf("error1");
 if (test_func(data2) != result2) printf("error2");
