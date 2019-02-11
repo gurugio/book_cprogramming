@@ -70,11 +70,13 @@ CHECK_TEST라는 매크로를 만들었습니다. 몇가지 낯선 문법들이 
   * 예를 들어 ``!(cstr->length(cstr))``는 문자열의 길이가 16일때 거짓을 반환합니다.
 * ``!!(__condition)``: !가 하나일때는 표현식의 참/거짓값의 반대값을 얻습니다. 다시 NOT을 한번 더 하므로 이제야 제대로된 0/1 값을 얻을 수 있습니다.
 
-그리고 매크로 함수가 지역변수를 가지고있고, ``({...})``로 둘러싸여있습니다. 이것은 중첩문이라고 불리는 것입니다.
+그리고 매크로 함수가 지역변수를 가지고있고, ``({...})``로 둘러싸여있습니다. 이것은 중첩문이라고 불리는 것입니다. GCC에서만 지원하는 문법입니다.
 * compound statement: http://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html#Statement-Exprs
 
+쉽게 생각하면 여러 문장을 하나로 묶을 때 ``({..})``로 묶는다고만 생각하면 됩니다. 이렇게 묶은 표현들이 특정 값을 반환할 수도 있습니다.
 
-https://elixir.bootlin.com/linux/latest/source/include/asm-generic/bug.h#L121
+매크로의 활용에 대해 좀더 알고싶으신 분들은 커널 소스를 읽어보시면 도움이 되실 것입니다.
+* https://elixir.bootlin.com/linux/latest/source/include/asm-generic/bug.h#L121
 
 만약 gcc가 아닌 다른 컴파일러를 쓰신다면 do-while 문을 이용해서 다음과 같이 만들어도 동일합니다.
 ```
