@@ -23,6 +23,7 @@ C프로그래밍을 실무로 쓴 기간은 12년, 처음 접한 후부터로 �
   * [cstring의 유닛테스트](unittest_cstring.md)
   * [테스트 케이스를 간편하게](unittest_cstring2.md)
 * 샘플 프로젝트
+  * [시험 버전](serial_step1.md)
 ```
 https://github.com/gurugio/book_cprogramming/tree/master/old/ch03/ch03.2
 시리얼번호 생성 및 인증 프로그램
