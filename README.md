@@ -24,7 +24,7 @@ C프로그래밍을 실무로 쓴 기간은 12년, 처음 접한 후부터로 �
   * [테스트 케이스를 간편하게](unittest_cstring2.md)
 * 샘플 프로젝트
 ```
-https://github.com/gurugio/calib_book/tree/master/ch03
+https://github.com/gurugio/book_cprogramming/tree/master/old/ch03/ch03.2
 시리얼번호 생성 및 인증 프로그램
 
 XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
