@@ -22,37 +22,8 @@ C프로그래밍을 실무로 쓴 기간은 12년, 처음 접한 후부터로 �
   * [유닛테스트 프레임웍](unittest.md)
   * [cstring의 유닛테스트](unittest_cstring.md)
   * [테스트 케이스를 간편하게](unittest_cstring2.md)
-
-http://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html#Statement-Exprs
-
+* 샘플 프로젝트
 ```
-if (test_func(data1) != result1) printf("error1");
-if (test_func(data2) != result2) printf("error2");
-if (test_func(data3) != result3) printf("error3");
-```
-이런 반복을
-```
-struct test_data_array
-{
-int input_data;
-int result_data;
-char *error_msg;
-} test_data_array[] =
-{
-{data1, result1, "1st test failed"},
-{data2, result2, "2nd test failed"},
-{data2, result3, "3rd test failed"}
-};
-for (i = 0; i < test_count; i++)
-{
-result = test_func(test_data_array[i].input_data)
-if (result != test_data_array[i].result_data) printf("%s\n", test_data_array[i].error_msg);
-}
-```
-이렇게 바꾸자
-
-
-# 샘플 프로젝트
 https://github.com/gurugio/calib_book/tree/master/ch03
 시리얼번호 생성 및 인증 프로그램
 
@@ -62,9 +33,5 @@ XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
 만약 시리얼에 들어갈 정보가 바뀌면?
 어떻게하면 데이터와 코드를 분리할 수 있을까?
 시리얼번호의 자리수나 형태가 바뀌면?
-
-# 참고자료
-https://svn.apache.org/repos/asf/harmony/enhanced/java/trunk/drlvm/vm/port/doc/PortReadme.htm
-http://apr.apache.org/docs/apr/1.4/modules.html: 여기나온 에러처리, 메모리관리 등등 소스를 참고해서 예제만들기
-
+```
 
