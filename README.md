@@ -24,15 +24,4 @@ C프로그래밍을 실무로 쓴 기간은 12년, 처음 접한 후부터로 �
   * [테스트 케이스를 간편하게](unittest_cstring2.md)
 * 샘플 프로젝트: 시리얼 번호 생성 프로그램
   * [시험 버전](serial_step1.md)
-```
-https://github.com/gurugio/book_cprogramming/tree/master/old/ch03/ch03.2
-시리얼번호 생성 및 인증 프로그램
-
-XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
-이런 형식의 시리얼을 만들기 위해 사용자ID,제품번호,사용기간 등등의 정보를 입력
-시리얼번호에 들어갈 정보마다 타입,핸들러 등등 지정
-만약 시리얼에 들어갈 정보가 바뀌면?
-어떻게하면 데이터와 코드를 분리할 수 있을까?
-시리얼번호의 자리수나 형태가 바뀌면?
-```
-
+  * [프레임웍 버전](serial_step2.md)
