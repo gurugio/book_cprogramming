@@ -1,4 +1,4 @@
-# Professional C programming tips
+# Professional C programming: Plugin and framework architecture
 
 C프로그래밍을 실무로 쓴 기간은 12년, 처음 접한 후부터로 따지만 20년정도를 써왔습니다.
 그러다보니 시중에 있는 좋은 책들과 강좌들이 C의 기초에 대해서 아주 잘 가르쳐주고있지만, 문법을 배운 후 실무로 개발할 때에 미리 알아두면 좋을 실전적인 노하우들에 대해서는 약간 부족하다는걸 느꼈습니다.
