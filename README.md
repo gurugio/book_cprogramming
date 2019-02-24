@@ -20,17 +20,17 @@ Please let me know if you have any tips for practical C programming skill. Pleas
 
 ## INDEX
 
-* [Error handling with goto](error_handle.md)
-* [Make if-else short](long-if.md)
-* [Make for-loop general](foreach.md)
+* [Error handling with goto(TBD)](error_handle.md)
+* [Make if-else short(TBD)](long-if.md)
+* [Make for-loop general(TBD)](foreach.md)
 * implement framework and plugin
-  * [Object programming in C: make cstring class with C](cstring.md)
-  * [Introduce the framework and plugin. And the interface.](interface.md)
-  * [Implement unittest framework](unittest.md)
-  * [Implement unittest for cstring](unittest_cstring.md)
-  * [Make test case simple](unittest_cstring2.md)
+  * [Object programming in C: make cstring class with C(TBD)](cstring.md)
+  * [Introduce the framework and plugin. And the interface.(TBD)](interface.md)
+  * [Implement unittest framework(TBD)](unittest.md)
+  * [Implement unittest for cstring(TBD)](unittest_cstring.md)
+  * [Make test case simple(TBD)](unittest_cstring2.md)
 * Sample project: serial number generator
-  * [Initial version](serial_step1.md)
-  * [Implementation the framework and plugin for the serial number generator](serial_step2.md)
+  * [Initial version(TBD)](serial_step1.md)
+  * [Implementation the framework and plugin for the serial number generator(TBD)](serial_step2.md)
 
 ## TODO
