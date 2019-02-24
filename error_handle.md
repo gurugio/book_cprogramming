@@ -1,42 +1,66 @@
-# 에러처리
+# Error handling
 
-프로그램을 만들다보면 반드시 필요한게 에러를 만났을 때 어떤 동작을 할지를 정하는 것입니다. 프로그램이 작던 크던, 완전히 실험용이거나 1회용이 아닌 이상 에러처리는 반드시 구현되어야합니다. 이번 장에서는 파일을 읽고 복사하는 프로램을 만들어보면서 어떤 에러가 발생할 수 있는지, 그리고 각 에러마다 어떤 처리가 필요한지를 한번 생각해보겠습니다. 그리고 에러처리를 좀더 효율적으로 할 수 있는 방법을 생각해보겠습니다.
+Every program meets error.
+Every program has its own plan to handle error gracefully.
+It does not matter if the program is big or small, for test or for production.
+This chapter introduces an example to read and copy a file, and introduces one techniques to make the error handling simple to make and to look.
 
-다음은 프로그램이 해야할 일들을 순서대로 한번 써본 것입니다.
-* 원본 파일 열기
-* 사본 파일 열기
-* 파일을 읽어서 저장할 메모리 할당
-* 원본 파일 읽어서 버퍼에 저장
-* 버퍼에있는 데이터를 사본 파일에 쓰기
-* 원본 파일 읽어서 버퍼에 저장 반복
-* 버퍼 메모리 해지
-* 사본 파일 닫기
-* 원본 파일 닫기
-* 종료
+First let us think about what the program should do.
+* open a source file
+* open a target file
+* allocate a memory buffer
+* read the source file and store the contents in the memory buffer
+* write the contents in the memory buffer into the target file
+* repeate reading and writing until it meets the end of the source file
+* free the buffer memory
+* close the source file
+* close the target file
+* end
 
 해야 할 일들마다 만약 그 일이 실패한다면을 생각해야 어떤 상황에서도 안정적으로 동작하는 프로그램이 될 수 있습니다. 원본 파일을 열다라는 하나의 동작에도 여러가지 에러 상황이 있을 수 있습니다. 원본 파일이 없을 수도 있고, 파일이 다른 사람의 것이라서 열지 못할 수도 있고, 심지어는 시스템에 메모리가 부족하거나 네트워크 연결이 끊겨서 파일을 열지못할 수 도 있습니다.
 
-최대한 간단하게 에러가 발생하면 프로그램을 종료하도록하는 에러 처리를 추가하면 아래와 같게 될 것입니다.
-* 원본 파일 열기
-  * 실패하면 종료
-* 사본 파일 열기
-  * 실패하면 원본 파일 닫고
-  * 종료
-* 파일을 읽어서 저장할 메모리 할당
-  * 실패하면 원본 파일 닫고
-  * 사본 파일 닫고
-  * 종료
-* 원본 파일 읽어서 버퍼에 저장
-* 버퍼에있는 데이터를 사본 파일에 쓰기
-* 원본 파일 읽어서 버퍼에 저장 반복
-* 버퍼 메모리 해지
-* 사본 파일 닫기
-* 원본 파일 닫기
-* 종료
+Whenever the program does something, it could meet an error.
+It is simple. The program tries to do this but it can fail. 
+It would be the best if every line has its own error handling.
+Sometimes one action could meet various errors.
+But let us start with the simplest case.
+We will only terminate the program when something bad happens.
+We will not case what the error is.
+
+Let us write what the program should do with the error handling scenario.
+* open a source file
+  * If it fails, terminate the program.
+* open a target file
+  * If it fails, close the source file
+  * and terminate the program.
+* allocate a memory buffer
+  * If it fails, close the target file
+  * close the source file
+  * and terminate the program.
+* read the source file and store the contents in the memory buffer
+* write the contents in the memory buffer into the target file
+* repeate reading and writing until it meets the end of the source file
+* free the buffer memory
+* close the target file
+* close the source file
+* end
 
 총 4가지 경우의 에러가 발생할 수 있습니다. 첫번째 에러는 별도로 처리할게 없이 바로 종료하면 됩니다. 에러가 발생하기 전까지 아무런 일도 하지 않았기 때문입니다. 그런데 두번째 에러부터 추가로 해야할 일이 있습니다. 그 전까지 실행했던 일들을 되돌려놓는 일을 해야합니다. 파일을 열었다면 닫아주어야하고, 메모리를 할당받았다면 해지해야합니다. 두번째 에러는 이전에 열었던 원본 파일을 닫아야하고, 세번째 에러는 원본 파일과 사본 파일 둘다 닫고 종료합니다.
 
-이런 에러처리를 잘 생각하면서 의사 코드를 그대로 실제 코드로 만들어보겠습니다.
+Let us think about 4 error cases.
+The first error is failing to open the source file.
+We do not need to do something for it becase we have not done anything.
+We only terminate the program.
+
+The second error is failing to open the target file.
+We should not terminate the program immediately because we have opened the source file.
+We have done something. We are responsible for the open file.
+Therefore we close the source file and then we terminate the program.
+
+The third error handling also turning back all things we have done before.
+We close the source and the target files, and then we terminate the program.
+
+Let me show you an example code.
 
 ```c
 #include <stdio.h>
