@@ -236,11 +236,7 @@ Please remember two:
 
 ## Exercises
 * The do-while loop in file_copy2 function calls fread and fwrite. What should we do if the fread and fwrite fails? How can we return the error value of fread and fwrite?
-* file_copy1 only returns -1 for all error cases.
- 
-
-  * file_copy2함수안에 do-while 루프가 있습니다. 이 루프안에 fread, fwrite 함수를 호출하는데요 이 함수들이 에러를 반환했을 경우에는 어떻게 처리해야할까요?
-  * file_copy1함수는 모든 에러처리의 반환값이 -1로 동일합니다. 각 에러마다 다른 반환값을 반환하도록 고쳐보세요. 그리고 file_copy2함수와 같이 goto문을 이용해서 에러처리를 한곳으로 모아보세요.
-  * 자신이 예전에 만들었던 코드들을 다시 열어보시고, 에러처리가 복잡한 함수가있는지 확인해보세요. 그리고 최대한 에러처리를 간결하게 고쳐보세요.
-  * 예제코드를 보면 calloc을 호출할때 sizeof(*buf)라는 코드가 있습니다. 보통 sizeof(char)로 많이 씁니다. 저는 왜 sizeof(*buf)로 썼을까요? 만약 buf의 데이터 타입이 char가 아니라 short이나 int, 아니면 다른 구조체였다면 sizeof 매크로에 무엇을 전달하는게 편리할까요? 유지보수의 관점에서 생각해보세요. 예를 들어 처음에 프로그램을 만들때는 char 타입의 버퍼를 만들어 썼지만, 나중에 유니코드나 utf-8로 작성된 파일을 복사하도록 프로그램의 스펙이 변경되었을 때를 가정해서 프로그램을 고쳐보세요.
-  * file_copy2 함수는 사본 파일이 이미 존재할 때 어떻게 동작할까요? 사본 파일이 이미 존재하는지를 확인하고, 만약 존재한다면 file_copy2 함수를 종료하고 에러값을 반환하도록 프로그램을 고쳐보세요.
+* file_copy1 only returns -1 for all error cases. Please modify the file_copy1 to return different values for each error case. The error code should be located at the end of the function.
+* Please check your code. Is there error handling code? Can you make the error handling code simple as like file_copy2?
+* Can you guess why I allocate memory with calloc(sizeof(*buf)) instead of calloc(sizeof(char))? Which is better if we need to change the data type of buffer from char to short (for Unicode or UTF-16)?
+* Please add a error handling code for a case if there is already the target file with the same name.
