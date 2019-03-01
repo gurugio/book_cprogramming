@@ -302,9 +302,14 @@ int macro_if(char cmd)
 }
 ```
 
-## 연습문제
-* struct cmd_handler가 전역적으로 선언되었습니다. 이 구조체를 함수 안으로 집어넣을 수 있을까요? 만약 가능하다면 어떤 장점이 있을까요?
-* struct cmd_handler chandlers[]는 함수안에서 지역변수로 정의되어서 사용되고있습니다. 함수밖에서는 사용할 수 없겠지요. 다른 코드에서도 chandlers를 사용해야한다고 가정하고, chandlers를 함수밖에서 전역변수로 정의해보세요. 같은 파일이 아니라 다른 파일에 chandlers를 정의해보세요. 다른 파일에 chandlers를 정의하면 어떤게 편리해질까요? 사용자 명령이 5개가 아니라 10개나 50개 정도가 된다면 chandlers를 어떻게 정의하는게 좋을까요?
-* cmd_handler라는 구조체는 데이터의 형태를 표현한 코드입니다. 만약 데이터가 바뀌면 구조체도 바뀌어야할테고, for 루프 또한 바뀔수밖에 없습니다. 위에서 for 루프는 코드이며 바뀌지않는다고 설명했지만 for 루프 내부에 바뀔 수밖에 없는 코드가 하나 존재하는데 바로 사용자 명령과 구조체의 값을 비교하는 if (chandlers[i].cmd == cmd) 부분입니다. 이 부분을 별도의 함수로 만들어보세요. 그리고 사용자 명령의 데이터 타입을 char에서 char *로 바꿔보세요. 사용자가 ‘a’라는 한 문자를 입력하는게 아니라 “first”, “second”, “third”같은 문자열을 입력한다고 가정하고 cmd_handler 구조체를 바꾸고, if (chandlers[i].cmd == cmd) 구문을 별도의 함수로 바꿔보세요.
-* DEFINE_HANDLER 매크로가 최종적으로 생성하는 코드는 gcc -E 명령으로 확인할 수 있습니다. DEFINE_HANDLER(e) 코드가 어떤 코드로 변할지 종이에 한번 써보시고 gcc -E 를 실행해서 비교해보세요.
-* DEFINE_HANDLER 매크로는 함수의 바디까지 미리 정의합니다. 왜냐하면 모든 명령어 핸들러가 똑같은 일을 하기 때문입니다. 현실적으로 이런 경우는 드물겠지요. 하지만 핸들러 함수의 타입이 동일한 경우는 흔합니다. 사용자가 입력하는 데이터 타입이 동일하므로 모든 핸들러 함수가 동일한 타입의 데이터를 입력받고, 동일한 타입의 에러를 반환하기 때문입니다. DEFINE_HANDLER 매크로를 함수의 타입만 정의하도록 바꿔보세요. 그리고 각 핸들러마다 다른 함수 바디를 갖도록 고쳐보세요.
+## Exercises
+* struct cmd_handler chandlers[] is defined inside of the function. What should we do if another function needs to use chandlers[]? If another function in another file need to use it? If the number of user command is 50, where is better place for chandlers?
+* There is one line in the for-loop that could be changed. ``if (chandlers[i].cmd == cmd)`` line could be changed if the type of the user command is changed. What happend if the user command type is changed to char *? For example, the user command is "first", "second" and "third". And please make a function to check the user command and replase it with ``if (chandlers[i].cmd == cmd)`` line.
+* run ``gcc -E`` command to check how the DEFINE_HANDLER macro is translated into the C code.
+* DEFINE_HANDLER macro defines the function body because all handlers do the same thing. It is rare case. Usuall only the function type (the type of return value and arguments) is same and the body is different. Please make fix the DEFINE_HANDLER to declare the function type. It whould be like following.
+```
+DEFINE_HANDLER(__cmd)
+{
+...body...
+}
+```
