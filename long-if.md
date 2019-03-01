@@ -1,6 +1,7 @@
-# 길어지는 조건문
+# Make if-else short
 
-어떤 프로그램이 사용자로부터 (a, b, c, d, e)중에 하나의 명령을 입력받고, 입력받은 명령이 무엇인지를 출력한다고 생각해보겠습니다. 대략 이런 코드가 될 것입니다.
+For example, there is a program to get a command among (a, b, c, d, e) from a user, and then print the given command.
+It would be like following.
 
 ```
 if cmd == ‘a’
@@ -12,9 +13,9 @@ else
 	do_error();
 ```
 
-하나의 if 문이 하나의 명령어를 처리합니다. 총 5개의 명령어를 처리해야하니까 5개의 if 문을 만들고, 마지막 else는 에러처리가 되겠네요.
-
-실제로 동작하는 코드를 만들어보겠습니다.
+One if-statement handles one command.
+So there should be five if-statements and the last else-statement is the error case.
+Let us make a real program.
 
 ```c
 #include <stdio.h>
@@ -74,11 +75,28 @@ int main(int argc, char *argv[])
 }
 ```
 
-main함수는 사용자의 명령을 받아서 long_if 함수에 전달하고 long_if 함수는 if-else를 써서 각 명령에 따라 해야할 일을 합니다. switch-case문도 결국은 if-else와 같으니까 하나로 생각해도 좋습니다.
+The long-if function checks what the user's command is and does something according to the user's command.
+I used switch-case statement because many experienced programmers use switch-case to make code better.
+But what is different?
 
-사용자가 입력할 수 있는 명령어가 총 5가지이고, 에러처리까지 생각하면 총 6개의 경우가 생깁니다. 그래서 if-else 문도 그만큼 길어졌습니다.
+Not only switch-case but also if-else handle user's command one-by-one.
+One if or switch statement handles one command.
+They are both long.
 
-언제나 그렇듯이 처음 프로그램을 기획하고 구현할때는 이정도로 충분할거라고 생각하지만, 항상 프로그램의 스펙은 변하게되어있습니다. 만약 프로그램 출시까지 스펙이 변하지않더라도, 프로그램을 버전업하면서 기능을 추가하다보면 반드시 사용자의 명령이 추가되고, if-else 문은 점점 더 길어지겠지요.
+Yes, it is not a big deal if a program is long.
+Program becomes always long.
+But also program lives long.
+What if specification of the program is changed?
+What if program should handle more commands?
+What if the name of user commands are changed, not (a,b,c,d,e), but (1,2,3,4,5)?
+
+Whenever something is changed, we should check the entire if-else list and find out what should be changed.
+Sometimes all if-else list should be changed and sometimes some.
+Or sometimes it should be longer.
+Usually program lives longer and program has more features.
+So if-else list will be longer and longer.
+And it will be more and more difficult to maintain the if-else list.
+
 
 물론 if-else 문 안에서 처리해야할 일들을 따로 함수로 호출한다고 해도 다음과 같이 if-else문이 길어지는 것은 피하지 못합니다.
 
