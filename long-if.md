@@ -239,13 +239,26 @@ The design of the code is also essential to make a good program.
 
 My idea is "It is important to separate the code (un-changable logic) and data (changable and flexible contents)".
 Usuall people call the value of variable or memory contents data.
-But the function could be data often if it has dependency on data.
+But the function could also be data often if it has dependency on data.
+The set of command handlers from the above example was data.
+They are functions but they can be changed: added or removed.
 
-if-else 코드를 변하는 것과 변하지않는 것으로 나눠볼까요? 먼저 사용자가 입력할 명령들과 각 명령마다 실행되야할 코드들, 이런 것들은 언제든지 변하는 것입니다. 이런 것들을 일종의 데이터라고 생각할 수 있습니다. 프로그램은 코드와 데이터로 나눠지고 코드는 실행될 명령어의 집합이고, 데이터는 코드가 참고할 값들이라는 사전적인 의미에서의 코드와 데이터를 말하는 것이 아닙니다. 데이터는 변하는 것입니다. 보통 변수의 값이나 메모리 값들 등을 데이터라고 말합니다. 사진 데이터, 음악 데이터들 변경될 수 있는 값들의 집합입니다. 좀더 넓은 의미에서 생각해보면 함수 또한 데이터입니다. 언제든 변할 수 있고, 없어지거나 추가될 수 있습니다. 함수들의 집합도 데이터가 됩니다.
+Then what is code?
+The logic is usually code.
+First it is fixed logically that the user inputs command.
+Second it is also fixed that the program should do something different for each command.
+They are not changed until the program is extincted.
+Even-if the spec is changed, the code is not changed.
 
-그럼 변하지 않는 것은 뭐가 있을까요? 사용자가 명령어를 입력한다는 것은 변하지 않습니다. 그리고 사용자의 명령에 따라 뭔가를 실행해야한다는 것도 변하지 않습니다. “사용자의 명령에 따라 움직인다”라는 사실은 우리가 만든 예제 프로그램의 존재 이유이므로 앞으로 이 프로그램에 스펙이 바뀌거나 기능이 추가되어도 변하지 않습니다.
+If you look at the code closely, you can see some patterns, and vice versa.
+For example, the handler functions have the same argument and the name of the function also has a pattern.
+We can assume that the argument and some part of the function name are not changable: they are code.
+And then the argument value is data.
 
-각 명령어의 핸들러 함수들을 보면 모두 같은 타입이고 이름만 다릅니다. 공통되고 반복되는 것 또한 변하지않는 것입니다. 아래처럼 변하지않는 것을 수행해주는 매크로 함수를 만들면 앞으로 새로운 명령어와 핸들러 함수를 추가할 때 좀더 편리하겠지요.
+Following is an example to separate code and data.
+The code is function namd and argument, so they are implemented by macro function.
+Macro function is good to make something repeatly, so it is good tool to implement a code pattern.
+And the argument for the macro function will be data.
 
 ```
 /* use gcc option -E to debug macro functions: gcc -e long-if.c */
