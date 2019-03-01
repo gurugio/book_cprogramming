@@ -219,14 +219,27 @@ Yes, only the pairs is changed at anyhow.
 
 Some of you might think the code becomes more complicated.
 But we should remember that the program lives long and gets bigger.
+The spec of the program might be (a,b,c,d,e) but it would be (a,b,c,d,f) in the future.
+And it could be (a,b,c,d,f,1,2,3,4,5) in the futher future..
+Whenever the spec is changed, you should look up the if-else code and which if-statement handles which command.
+And someday the if-else code will be hundreds lines.
 
-사실 이러한 코드를 처음 접해보면 코드가 더 복잡해졌다고 생각할 수 있습니다. 하지만 우리가 만든 프로그램은 계속 살아서 자라난다는걸 생각해야합니다. 프로그램의 스펙은 바뀌고, 기능은 늘어납니다. 처음 기획한 명령어는 (a,b,c,d,e)일 수 있습니다. 하지만 시간이 지나면서 지원해야할 명령어가 (a,b,c,d,f)가 될 수 있습니다. long_if 함수에서 바뀐 명령어를 처리하려면 보통 if-else 코드를 찾아서 함수 중간에 있는 조건문 중 하나를 바꾸고, 코드를 바꿉니다. 그 과정에서 몇번의 빌드 에러와 런타임 에러가 발생하고 이런저런 문제들이 발생합니다. 그 문제들을 수정하다가 명령 a를 제거하고 명령g를 추가해야한다는 요구사항을 받게됩니다. 그러다보면 if-else 코드는 누더기가 되고, 어디선가 메모리가 새고 알수없는 문제들이 생기게됩니다.
+After the code and data is seperated, you will look into only the data.
+The code is not changed.
+If you should add some commands, you just add some pairs of (command, handler) and make some handler functions.
+If the handler functions become big, you can seperate them to another file or other files.
+If it is necessary to remove some commands, you just remove some pairs of (command, handlers).
+It is ok if you forget to remove the handler functions.
 
-short_if 함수를 보면 처리해야할 명령어가 바뀌어도 (명령어,코드) 쌍으로된 집합만 바뀌고, 사용자 명령을 받아들이고 명령어 집합을 검색해서 실행해야할 코드를 찾는 for 루프는 바뀌지 않습니다. 프로그램의 스펙이 바뀌고, 명령어가 추가되거나 삭제되어도 short_if 함수의 핵심 코드는 바뀌지 않습니다. 단지 (명령어,코드) 쌍을 추가할 뿐입니다. 명령어를 제거할 때도 (명령어,코드) 집합에 있는 항목중 하나만 지우면 됩니다. 핸들러 함수를 바로 제거하지않아도 됩니다. 왜냐면 언제나 그렇듯이 곧 지웠던 명령어를 다시 추가하라는 요구사항이 들어올거니까요. 기획자들은 늘 그랬습니다.
+Program design is essential to make a program that live long and evolve continuosly.
+But you cannot design flexible and robust program if you do not know how to write flexible code.
+At the beginning stage, the high level design could be beatiful and the program could be implemented just like the design.
+But the maintaining of the program would be caos if the code is not flexible.
+The design of the code is also essential to make a good program.
 
-오랫동안 유지보수되면서 살아 숨쉬는 프로그램을 만들기 위해서는 프로그램의 디자인을 잘 해야합니다. 프로그램의 디자인을 말할때 보통 프로그램 전체의 구조를 잘 잡는 것을 의미합니다. 하지만 그것이 전부가 아닙니다. 프로그램의 코드 자체가 프로그램 전체 구조를 잘 지원할 만큼 유연해야합니다. 코드 자체의 구조 또한 잘 디자인해야 살아 숨쉬고 유연한 프로그램을 만들 수 있습니다. 잘 디자인된 프로그램이라도 막상 코드 자체에 유연성이 없으면 그런 디자인을 제대로 표현하지못하고, 유지보수가 어려울 수밖에 없습니다.
-
-제가 생각할 때 유연한 코드가 되기 위해서는 변하는 것과 변하지않는 것을 잘 구분해야합니다. 앞으로 이 책에서 다루게될 주제들은 모두 “변하는 것과 변하지않는 것을 구분”하는 연습들입니다.
+My idea is "It is important to separate the code (un-changable logic) and data (changable and flexible contents)".
+Usuall people call the value of variable or memory contents data.
+But the function could be data often if it has dependency on data.
 
 if-else 코드를 변하는 것과 변하지않는 것으로 나눠볼까요? 먼저 사용자가 입력할 명령들과 각 명령마다 실행되야할 코드들, 이런 것들은 언제든지 변하는 것입니다. 이런 것들을 일종의 데이터라고 생각할 수 있습니다. 프로그램은 코드와 데이터로 나눠지고 코드는 실행될 명령어의 집합이고, 데이터는 코드가 참고할 값들이라는 사전적인 의미에서의 코드와 데이터를 말하는 것이 아닙니다. 데이터는 변하는 것입니다. 보통 변수의 값이나 메모리 값들 등을 데이터라고 말합니다. 사진 데이터, 음악 데이터들 변경될 수 있는 값들의 집합입니다. 좀더 넓은 의미에서 생각해보면 함수 또한 데이터입니다. 언제든 변할 수 있고, 없어지거나 추가될 수 있습니다. 함수들의 집합도 데이터가 됩니다.
 
