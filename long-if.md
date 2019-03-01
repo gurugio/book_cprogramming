@@ -8,7 +8,7 @@ if cmd == ‘a’
 	do_something_for_a();
 else if cmd == ‘b’
 	do_something_for_b();
-......(생략)
+......(skip)
 else
 	do_error();
 ```
@@ -217,7 +217,8 @@ And if we should remove some commands, we only remove some pairs.
 If we change user commands, AGAIN, we only change the pairs.
 Yes, only the pairs is changed at anyhow.
 
-
+Some of you might think the code becomes more complicated.
+But we should remember that the program lives long and gets bigger.
 
 사실 이러한 코드를 처음 접해보면 코드가 더 복잡해졌다고 생각할 수 있습니다. 하지만 우리가 만든 프로그램은 계속 살아서 자라난다는걸 생각해야합니다. 프로그램의 스펙은 바뀌고, 기능은 늘어납니다. 처음 기획한 명령어는 (a,b,c,d,e)일 수 있습니다. 하지만 시간이 지나면서 지원해야할 명령어가 (a,b,c,d,f)가 될 수 있습니다. long_if 함수에서 바뀐 명령어를 처리하려면 보통 if-else 코드를 찾아서 함수 중간에 있는 조건문 중 하나를 바꾸고, 코드를 바꿉니다. 그 과정에서 몇번의 빌드 에러와 런타임 에러가 발생하고 이런저런 문제들이 발생합니다. 그 문제들을 수정하다가 명령 a를 제거하고 명령g를 추가해야한다는 요구사항을 받게됩니다. 그러다보면 if-else 코드는 누더기가 되고, 어디선가 메모리가 새고 알수없는 문제들이 생기게됩니다.
 
