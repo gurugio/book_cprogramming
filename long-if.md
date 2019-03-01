@@ -97,8 +97,7 @@ Usually program lives longer and program has more features.
 So if-else list will be longer and longer.
 And it will be more and more difficult to maintain the if-else list.
 
-
-물론 if-else 문 안에서 처리해야할 일들을 따로 함수로 호출한다고 해도 다음과 같이 if-else문이 길어지는 것은 피하지 못합니다.
+Somebody try to refine the long if-else as following.
 
 ```
 if case1
@@ -111,22 +110,39 @@ else
 	call error-handler
 ```
 
-이렇게 시간이 갈수록 길어지는 if-else 처리를 어떻게하면 간결하고, 유지보수가 편리하도록 바꿀 수 있을까요?
+It can reduce some lines but it is still not easy to add, remove and change cases.
 
-한가지 방법은 프로그램이 지원하는 명령과 각 명령에따라 실행되야할 코드를 따로 분리해서 관리하는 것입니다.
+Now I would like to introduce one technique to separate the data and code.
+The data means something given from outside and flexible. It is changed often.
+The code is program code to handle the data. It is not flexible and not changed often.
 
-우선 두개의 필드를 가지는 구조체를 만듭니다.
-* 사용자가 입력한 명령
-* 프로그램이 실행해야할 코드
+We can define the code and data as following.
+* data: the user commands
+* code: program code to handle the user command
 
-그리고 프로그램이 지원하는 명령들과 실행해야할 코드들의 짝을 미리 저장해놓습니다.
+How can we separate the code and data?
+
+We can define the data as following:
 * (a, handler_a)
 * (b, handler_b)
 * (c, handler_c)
 * (d, handler_d)
 * (e, handler_e)
 
-프로그램은 사용자의 입력을 받은 후에 미리 저장해놓은 (명령,코드) 집합 중에서 어떤 명령에 해당되는지를 찾아서 코드를 실행하기만 하면 됩니다. 만약 사용자가 지원되지않는 명령을 입력했다면 에러를 반환하면 됩니다.
+We make a list of pairs (user command, handler code for each user command) which could be called as "Data Structure".
+The handler code for each user command also is called as data because it is changed when the user command is changed or program spec is changed.
+
+Then we can make a code as following:
+```
+for each pair in the list
+	if user's command == command in the pair
+		call handler in the pair
+```
+
+This code is not changed (maybe forever).
+Even if program spec is changed and many new commands are added, or many commands are removed, above code is not changed.
+
+Let me show a program that implements the code and data seperation.
 
 ```c
 static int handler_a(char cmd)
@@ -188,9 +204,20 @@ int short_if(char cmd)
 }
 ```
 
-사용자 명령을 처리하는 함수가 short_if 함수로 바뀌었습니다. short_if 함수를 보면 지역변수를 선언한 부분들이 바로 (명령,코드) 집합을 만드는 부분입니다. 
+I replace the long_if with short_if.
+short_if defines the DATA inside of it.
+The pair (command, handler) is defined as struct cmd_handler.
+The the list of the pair is defined as an array of the structure.
+(Of course, it can be defined as list. I just try to keep simple.)
 
-for 루프는 (명령,코드) 집합중에 사용자의 입력과 일치하는 항목이 있는지 검색합니다. 데이터와 사용자 입력을 비교해서 실행할 코드를 찾는 행위는 변하지 않습니다. 그러므로 앞으로 프로그램의 스펙이 바뀌거나 어떤 요구사항들이 들어와도 이 코드는 잘 변하지 않습니다.
+Let us imagine if we should add some commands.
+We do not need to add more if-statements.
+We just add more pairs.
+And if we should remove some commands, we only remove some pairs.
+If we change user commands, AGAIN, we only change the pairs.
+Yes, only the pairs is changed at anyhow.
+
+
 
 사실 이러한 코드를 처음 접해보면 코드가 더 복잡해졌다고 생각할 수 있습니다. 하지만 우리가 만든 프로그램은 계속 살아서 자라난다는걸 생각해야합니다. 프로그램의 스펙은 바뀌고, 기능은 늘어납니다. 처음 기획한 명령어는 (a,b,c,d,e)일 수 있습니다. 하지만 시간이 지나면서 지원해야할 명령어가 (a,b,c,d,f)가 될 수 있습니다. long_if 함수에서 바뀐 명령어를 처리하려면 보통 if-else 코드를 찾아서 함수 중간에 있는 조건문 중 하나를 바꾸고, 코드를 바꿉니다. 그 과정에서 몇번의 빌드 에러와 런타임 에러가 발생하고 이런저런 문제들이 발생합니다. 그 문제들을 수정하다가 명령 a를 제거하고 명령g를 추가해야한다는 요구사항을 받게됩니다. 그러다보면 if-else 코드는 누더기가 되고, 어디선가 메모리가 새고 알수없는 문제들이 생기게됩니다.
 
