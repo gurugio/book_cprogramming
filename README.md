@@ -21,7 +21,7 @@ Please let me know if you have any tips for practical C programming skill. Pleas
 ## INDEX
 
 * [Error handling with goto](error_handle.md)
-* [Make if-else short(TBD) with branch table](long-if.md)
+* [Make if-else short with branch table](long-if.md)
 * [Make for-loop general(TBD)](foreach.md)
 * implement framework and plugin
   * [Object programming in C: make cstring class with C(TBD)](cstring.md)
