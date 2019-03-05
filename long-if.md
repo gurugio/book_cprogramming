@@ -1,4 +1,4 @@
-# Make if-else short
+# Make if-else short with branch table
 
 For example, there is a program to get a command among (a, b, c, d, e) from a user, and then print the given command.
 It would be like following.
