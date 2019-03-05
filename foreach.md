@@ -16,6 +16,7 @@ struct cmd_handler chandlers[] = {
 	{'e', macro_handler_e}};
 ```
 Below for-loop scans the array and find out the handler function of the given command.
+Then it calls the handler function.
 
 ```c
   	for (i = 0; i < sizeof(chandlers)/sizeof(chandlers[0]); i++) {
@@ -25,7 +26,14 @@ Below for-loop scans the array and find out the handler function of the given co
 		  }
 	  }
 ```
-for 루프에서 배열의 각 요소를 순회하게되고, 그 중에서 사용자가 입력한 명령과 동일한 명령어가있는 요소을 찾은 다음, 해당 요소에 저장된 함수 포인터를 호출합니다.
+
+Please note that the specification is always changed.
+We made an array of cmd_handler structure.
+What happens if the program should add and remove the user command dynamically?
+Array is not suitable for add and removing some elements.
+So we should make a list of cmd_handler structure.
+
+
 
 좋은 프로그램을 만들 때는 항상 이 요구사항이 바뀔 수 있다는걸 생각해야합니다. 우리가 만든 cmd_handler 구조체의 배열이 어떻게 바뀔 수 있을까요? 프로그램의 규모가 커지거나, 사용자가 입력할 명령어가 바뀌면, 구조체 배열은 어떻게 바껴야될까요?
 
