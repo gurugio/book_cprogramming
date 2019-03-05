@@ -16,7 +16,7 @@ C프로그래밍을 실무로 쓴 기간은 12년, 처음 접한 후부터로 �
 ## 목차
 
 * [goto를 이용한 에러처리](error_handle.md)
-* [점프테이블(jump-table, branch-table)을 이용한 분기문 갯수 줄이기](long-if.md)
+* [점프테이블(jump-table, branch-table)을 이용한 if-else 처리](long-if.md)
 * [자주쓰는 for 루프를 간편하게](foreach.md)
 * 인터페이스과 플러그인을 분리하는 프로그래밍
   * [C언어로 C++의 string 객체 만들어보기](cstring.md)
