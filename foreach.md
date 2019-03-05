@@ -1,6 +1,6 @@
-# 자주쓰는 for 루프를 간편하게
+# Make for-loop general
 
-길어지는 if-else 코드를 줄이기위해 다음과 같이 (명령어, 명령어 수행함수) 구조체를 만들고, 구조체의 배열로 모든 명령어와 명령어 수행 함수를 지정할 수 있었습니다.
+In previous chapter, we created a (command, handler function) structure and an array of the structure for all user commands.
 
 ```c
 struct cmd_handler {
@@ -15,7 +15,7 @@ struct cmd_handler chandlers[] = {
 	{'d', macro_handler_d},
 	{'e', macro_handler_e}};
 ```
-이렇게 만들어진 데이터를 처리하는 코드는 다음과 같은 for 루프 코드입니다.
+Below for-loop scans the array and find out the handler function of the given command.
 
 ```c
   	for (i = 0; i < sizeof(chandlers)/sizeof(chandlers[0]); i++) {
