@@ -32,20 +32,23 @@ We made an array of cmd_handler structure.
 What happens if the program should add and remove the user command dynamically?
 Array is not suitable for add and removing some elements.
 So we should make a list of cmd_handler structure.
+That is not all.
+We also should change the for-loop to traversal the list.
 
+Is that enough?
+No.
+If the program lives long and get bigger, many files would access the chandlers.
+Therefore we need to change many files whenever the cmd_handler structure is changed and/or chandler is changed.
+It is not general at all.
 
+If the cmd_handler structure is defined and used only once, we do not need to care.
+But if it is common data for many files or many layers, it should be more general to access the cmd_handler structure.
 
-좋은 프로그램을 만들 때는 항상 이 요구사항이 바뀔 수 있다는걸 생각해야합니다. 우리가 만든 cmd_handler 구조체의 배열이 어떻게 바뀔 수 있을까요? 프로그램의 규모가 커지거나, 사용자가 입력할 명령어가 바뀌면, 구조체 배열은 어떻게 바껴야될까요?
+What are we supporsed to do to make a general for-loop?
+In previous chapter, we have seen that the macro can make a common interface to replace a repeated function.
+The for-loop is also repeated.
+So we can make a macro to replace the for-loop.
 
-프로그램의 규모가 매우 커져서, 여러 파일에서 정의된 여러 함수들이 chandlers 배열을 참조한다면 어떤 문제가 생길까요? 매번 똑같은 for 루프 함수를 여러 파일에서 여러번 똑같이 써주어야합니다. 만약 구조체 이름이 바뀌거나, 구조체의 정의 자체가 바뀐다면, 여러 파일의 for 루프를 모두 수정해야합니다. 프로그램 스펙을 하나만 바꾸려고해도 많은 코드를 바꿔야하는 문제가 생깁니다.
-
-사용자가 입력할 명령어가 동적으로 바뀌면 어떤 문제가 생길까요? 현재는 사용자 명령어가 미리 정의되어있으므로, 소스 코드에 하드코딩되어 정의되어있습니다. 그래서 배열을 사용해도 아무런 문제가 없었지요. 하지만 사용자의 명령을 사용자가 직접 지정하거나 추가/삭제할 수 있도록 만든다면, 배열이 적당한 자료구조일까요? 배열은 가장 빠르고 만들기쉬운 데이터 구조이지만, 데이터를 추가/삭제하기 어려다는 단점도 가지고 있습니다. 그럴때는 링크드 리스트를 사용하도록 코드를 수정하면 좋습니다. 다시 정리하면 프로그램 요구사항이 바뀌어서 사용자의 명령을 동적으로 추가하고 삭제해야할 경우, cmd_handler 데이터 구조체를 링크드 리스트에 맞게 고쳐주고, chandler 배열도 링크드 리스트로 바꿔야됩니다. 또한 프로그램 전체를 뒤져서 for 루프도 리스트를 순회하는 코드로 바꿔야겠네요.
-
-결국 프로그램의 요구사항이 조금만 바뀌어도 for 루프는 수정될수밖에 없습니다. 만약 cmd_handler 구조체가 한두번만 사용되는 데이터라면 상관없겠지만, 여러 파일에서 여러번 사용된 데이터라면 for 루프 코드는 매우 유연하지못한 코드입니다.
-
-그럼 어떻게해야 유연한 코드가 될까요? 우리는 if-else를 단순화할 때 매크로를 이용해서 동일한 형태로 반복되는 함수들을 정의하는 코드를 봤습니다. 같은 형태의 함수가 반복될때, 그 함수를 생성하는 매크로를 만들어서 매크로를 여러번 호출하기만하면 함수를 만들어낼 수 있었습니다.
-
-for 루프 또한 매크로를 이용해서 정의할 수 있습니다.
 ```c
 #define cmd_for_each(__i, __cmd, __fp, __handlers) \
 	for(__i = 0, __cmd=__handlers[0].cmd, __fp=__handlers[0].handler; \
