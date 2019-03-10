@@ -42,11 +42,9 @@ void cstring_debug(cstring *this)
 	printf("_max_size=%zu\n", this->_max_size);
 }
 ```
-먼저 debug메소드입니다. cstring 구조체에있는 변수들을 출력합니다. 클래스의 멤버 변수들을 출력해주는 것과 같습니다. 객체가 어떤 상태인지 알아보기위한 함수입니다.
-
-함수 인자는 cstring 객체 자신입니다. 그래서 this라는 이름을 썼습니다. C++에서도 객체 자신의 주소를 this라는 이름으로 표현하는 것과 같습니다.
-
-다른 메소드들의 구현 코드를 보겠습니다.
+The debug method prints the values of member variables in cstring structures. It is for checking the status of object.
+The first argument is the pointer to itself. Therefore the name is this as C++ does.
+Below is the other methods.
 ```
 void cstring_clear(cstring *this)
 {
@@ -75,9 +73,10 @@ void cstring_print(cstring *this)
 	printf("%s\n", this->_buf);
 }
 ```
-나머지 메소드들의 구현은 위와 같습니다. 아주 단순하게 구현했습니다. 중요한건 객체 자신을 인자로 넘겨야한다는 것입니다. 함수 내부에서는 이 함수가 어떤 객체의 메소드인지 알 수가 없으니까 반드시 함수 인자에 객체의 포인터를 넘겨줘야합니다.
+They are simple and just example.
+The point is that the pointer to object should be passed to the method because each function cannot identify that which object they are involved.
 
-아래는 객체를 생성하는 매크로입니다.
+I make a macro to define a cstring class.
 ```
 #define DEFINE_CSTRING(__name, __buf)				\
 	struct cstring __name = {						\
@@ -91,9 +90,9 @@ void cstring_print(cstring *this)
 		.print = cstring_print,						\
 		.debug = cstring_debug};
 ```
-매크로를 사용하지않았다면 객체를 선언할 때마다 반복해서 하드코딩했을 선언부분을 매크로로 만든것 뿐입니다.
+It is just for reducing hand-work.
+Following is an example to show how to make and use a object.
 
-아래는 객체를 사용하는 main함수입니다. 어떻게 객체를 만들고 사용하는지를 보여주기 위해 만들었습니다.
 ```
 int main(void)
 {
@@ -114,9 +113,12 @@ int main(void)
 	return 0;
 }
 ```
-사실 객체를 만드는 것 자체에 의미는 없습니다. 단지 구조체에 함수 포인터와 속성 등을 저장해서 하나의 클래스처럼 사용할 수도 있다는 것을 보여주는 것 뿐입니다.
+Actually it does not meaningful to make and use a object.
+Just storing some variables and function pointers in a structure.
 
-cstring_length 함수는 전역 함수이니까 굳이 cstring 객체를 통해서 호출할 필요가 없습니다. 하지만 아래와 같이 하나의 파일을 만들어서 각 함수들을 static으로 선언해주고, struct cstring만 헤더 파일에서 정의하면 어떻게 될까요?
+But it would be more similar to object-oriented programming if we made a file and make all function static.
+It would be also necessary to make a header.
+Please see below sources.
 
 cstring.h
 ```
@@ -222,11 +224,11 @@ int main(void)
 	return 0;
 }
 ```
+Now the methods of cstring is only accessible via cstring object.
+Yes, it is more like a namespace.
+Actually I do not care whethere it is a namespace or class.
+What I want to do is making a seperate space for certain data and functions.
+And they are only accessible via a specific interface.
+That is usually called as a namespace.
 
-이렇게 cstring 관련 메소드들을 외부에서 호출하지못하도록 구현하면 cstring이 클래스가 아니라 namespace의 역할을 하게됩니다. cstring 객체를 만드는게 중요한게 아니라 어떤 데이터와 함수들을 하나의 namespace에 모아놓고, 반드시 정해진 인터페이스(cstring객체의 메소드)를 통해서만 해당 데이터와 함수들을 이용하도록 만들게됩니다. 
-
-C언어로 클래스를 만들 수 있다는 것보다 더 중요한게 바로 namespace를 만드는 것입니다. 그리고 이런 namespace를 활용해서 프레임웍과 플러그인 프로그래밍을 할 수 있습니다.
-
-## 연습문제
-
-* 코드를 잘보면 불합리한게 보입니다. ``aaa.length(&aaa)``, ``aaa.at(&aaa,2)`` 와 같이 객체의 메소드들을 호출할 때마다 객체 포인터를 넘겨야합니다. 반복되는 코드이니 당연히 매크로를 이용해서 쉽게 사용할 수 있도록 바꿀 수 있겠지요. 매크로의 이름을 CALL_CSTRING_LENGTH, CALL_CSTRING_AT 등으로 만들어보세요.
+The namespace is a core of the framework and plugin programming.
