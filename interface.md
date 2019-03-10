@@ -1,6 +1,6 @@
 # Implement framework and plugin
 
-## Introduce
+## Introduction
 
 This chapter describe the concepts of framework, plugin and interface very roughly.
 But it is not easy to describe the concepts in a short document.
