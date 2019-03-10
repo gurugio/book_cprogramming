@@ -1,8 +1,9 @@
-# 프레임웍과 플러그인을 분리하는 프로그래밍
+# Implement framework and plugin
 
-## 구조체를 이용한 객체지향 프로그래밍
+## Object-oriented programming with structure
 
-C언어를 이용해서 객체지향 프로그래밍를 흉내낼 수 있습니다. 예제 소스를 보면서 어떻게 가능한지를 한번 알아보겠습니다.
+We can make a mimic of C++ with structure.
+Below is an example to show how to make a class.
 
 ```c
 #include <stdio.h>
@@ -23,13 +24,13 @@ struct cstring {
 };
 typedef struct cstring cstring;
 ```
-우리는 C++의 String 클래스를 C로 만들어보겠습니다. 위와같이 string이라는 이름의 구조체를 만듭니다. String 클래스의 속성은 문자열을 저장할 버퍼와 버퍼의 길이, 실제로 저장된 문자열의 길이가 있습니다.
+We make a structure and a new type by the name of cstring.
+The cstring structure has fields for the buffer to store a string, a length of buffer and a length of stored string, as String class of C++ does.
+And also cstring structure has some methods. Please see http://www.cplusplus.com/reference/string/string/ to check what each method does. It is very simple. But please notice that there is one common argument for all methods. The first argument is always a pointer to cstring object. If you knew OOP of the python, you would think it is the same to self argument. Yes, it is the same. Actually C++ provides a syntax sugar to hide the self argument by the name of "this". I do not tell about "this" here because it is out of scope.
 
-그리고 클래스에 들어갈 메소드들이 있습니다. 각각의 메소드들이 하는 일은 http://www.cplusplus.com/reference/string/string/ 사이트를 참고하세요. 각 메소드들에는 공통점이 있습니다. 반드시 첫번째 인자가 struct cstring 구조체의 포인터이어야합니다. 왜인지는 실제 예제 코드를 보면서 설명하겠습니다.
+Two methods, print and debug, are only for debugging.
+Let us see how to implement each method.
 
-print와 debug 메소드는 C++의 String 클래스에 없는 메소드입니다. 제가 디버깅을 위해서 임의로 만들것들입니다.
-
-다음으로 각 메소드를 어떻게 구현하는지 보겠습니다.
 ```
 void cstring_debug(cstring *this)
 {
