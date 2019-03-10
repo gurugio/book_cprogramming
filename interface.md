@@ -1,28 +1,49 @@
 # Implement framework and plugin
 
-## Introduce the plugin and the interface.
+## Introduce
 
-Interface is a calling convention or a calling policy between program modules.
-The cstring example is showing the example of the interface and plugin.
+This chapter describe the concepts of framework, plugin and interface very roughly.
+But it is not easy to describe the concepts in a short document.
+It would be better to focus on the example sources.
+
+Nevertheless let me tell you the brief concepts.
+Interface is a calling convention or a calling policy between the framework and the plugin.
+The cstring example is showing a example.
 
 ![interface and plug-in of cstring](/interface.png)
 
-그림에서 보는 것과 같이 cstring 구조체에 저장된 함수 포인터가 인터페이스입니다.
-* cstring.clear
-* cstring.at
+Let us skip the framework for a while.
+Let us see the interface first.
+As you see, the function types in cstring structure are interfaces.
+* ``void (*clear)(struct cstring *)``
+* ``void (*length)(struct cstring *)``
 
-인터페이스는 플러그인에서 특정한 틀을 제공합니다. 플러그인은 이 틀에 맞춰서 서비스를 제공해야합니다.
+Interface is a kind of policy.
+Plugin implements a real service according to the interface.
+So the function implementations in cstring.c file are plugin.
+* ``void cstring_clear(struct cstring *)``
+* ``void cstring_length(struct cstring *)``
 
-cstring.c 파일에 구현된 각 함수들이 바로 플러그인이 됩니다.
-* cstring_clear
-* cstring_at
+The framework is a final implementation for the user.
+User will see the framework and does not care the plugin and the interface.
+The user just use cstring object.
+The user does not need to care how to implement the clear or length methods.
 
-다시 설명하면 cstring 구조체에있는 함수 포인터들은 cstring이라는 계층 혹은 모듈이 어떤 인터페이스를 main함수에 제공할지를 알려주는 역할을 합니다. main함수는 cstring 구조체에있는 함수 포인터만을 보고 함수들을 호출할 수 있습니다.
+In the previous example, the main function is the user of cstring class.
+Framework, cstring class, provides interfaces for user: cstring.clear, cstring.length
+The main function calls cstring.clear and cstring.length without knowing the implementation in cstring.c file.
+The main function is able to see only cstring class that is framework.
+The main function cannot access the functions in cstring.c because they are plugin.
 
-cstring.c에는 각 함수들이 구현되어있습니다. 이 것들이 플러그인입니다. main함수에서는 cstring.c에있는 플러그인이 보이지도않고 접근할 수도 없습니다. 오직 cstring 구조체를 통해서만 플러그인에 접근할 수 있습니다.
+The plugin, cstring_clear and cstring_length, are called via framework and interface.
+If it is necessary, the plugin would be replaced.
+Anybody can make a cstring2.c with better performance and replace cstring.c with cstring2.c.
+The main function does not know which plugin is the implementation of the methods.
+Actually the main function does not need to know it.
 
-플러그인은 얼마든지 변할 수 있습니다. 누군가가 좀더 성능이 좋은 cstring을 만들수 있다면 cstring.c라 아니라 cstring2.c를 만들어서 cstring.c를 대체할 수 있습니다. cstring2.c에 각 함수들의 구현을 만들고 create_cstring 함수를 만들기만하면 main함수에서는 내가 호출할 cstring.clear 함수가 cstring.c에서 구현된 것인지 cstring2.c에서 구현된 것인지 알 수도 없고 알 필요도 없습니다.
-
-왜 cstring을 구현해봤는지 이해가 되시나요? 단순히 구조체안에 함수 포인터를 넣을 수 있다거나, C++의 클래스를 흉내낼 수 있다는 것이 전부가 아닙니다. 프로그램을 만들 때 어떤 부분은 인터페이스가 되고, 어떤 부분은 플러그인이 되어야하는지를 구별해서 구현해야한다는걸 보여드리기 위해서입니다.
-
-만약 처음 인터페이스 개념을 접하셨다면 아직 잘 이해가 안될 것입니다. 다음으로 cstring을 테스트할 테스트 프레임웍을 만들면서 좀더 인터페이스와 플러그인 개념을 알아보겠습니다.
+Do you notice why I show the implementation of cstring in object-oriented style?
+It does not aim to show the mimic of C++ class.
+I would like to show you the framework and the plugin, and the interface between the framework and the plugin.
+It is not easy to describe the concepts in a short document.
+It would be better for you to understand if I show you one more example.
+I will show a test framework that includes plugin and interface in next chapters.
