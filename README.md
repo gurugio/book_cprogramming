@@ -22,7 +22,7 @@ Please let me know if you have any tips for practical C programming skill. Pleas
 
 * [Error handling with goto](error_handle.md)
 * [Make if-else short with branch table](long-if.md)
-* [Make for-loop general(TBD)](foreach.md)
+* [Make for-loop general](foreach.md)
 * implement framework and plugin
   * [Object programming in C: make cstring class with C(TBD)](cstring.md)
   * [Introduce the framework and plugin. And the interface.(TBD)](interface.md)
