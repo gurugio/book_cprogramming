@@ -1,6 +1,6 @@
-# 인터페이스과 플러그인을 분리하는 프로그래밍
+# Implement framework and plugin
 
-## 인터페이스과 플러그인은 무엇인가
+## Introduce the framework and plugin. And the interface.
 
 인터페이스는 프로그램에서 계층과 계층간의 호출 규칙입니다. 플러그인은 인터페이스의 구현입니다. cstring을 만들어본 이유는 바로 인터페이스와 플러그인의 예제를 보여드리기 위해서입니다.
 
