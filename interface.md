@@ -1,8 +1,9 @@
 # Implement framework and plugin
 
-## Introduce the framework and plugin. And the interface.
+## Introduce the plugin and the interface.
 
-인터페이스는 프로그램에서 계층과 계층간의 호출 규칙입니다. 플러그인은 인터페이스의 구현입니다. cstring을 만들어본 이유는 바로 인터페이스와 플러그인의 예제를 보여드리기 위해서입니다.
+Interface is a calling convention or a calling policy between program modules.
+The cstring example is showing the example of the interface and plugin.
 
 ![interface and plug-in of cstring](/interface.png)
 
