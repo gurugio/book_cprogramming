@@ -24,7 +24,7 @@ Please let me know if you have any tips for practical C programming skill. Pleas
 * [Make if-else short with branch table](long-if.md)
 * [Make for-loop general](foreach.md)
 * implement framework and plugin
-  * [Object programming in C: make cstring class with C(TBD)](cstring.md)
+  * [Object programming in C: make cstring class with C](cstring.md)
   * [Introduce the framework and plugin. And the interface.(TBD)](interface.md)
   * [Implement unittest framework(TBD)](unittest.md)
   * [Implement unittest for cstring(TBD)](unittest_cstring.md)
