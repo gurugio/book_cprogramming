@@ -36,7 +36,7 @@ That is not all.
 We also should change the for-loop to traversal the list.
 
 Is that enough?
-No.
+Sometimes not.
 If the program lives long and get bigger, many files would access the chandlers.
 Therefore we need to change many files whenever the cmd_handler structure is changed and/or chandler is changed.
 It is not general at all.
@@ -55,9 +55,14 @@ So we can make a macro to replace the for-loop.
 	    __i < sizeof(__handlers)/sizeof(__handlers[0]); \
 	    __i++, __cmd=__handlers[__i].cmd, __fp=__handlers[__i].handler)
 ```
-cmd_for_each 매크로 함수는 cmd_handler 구조체의 배열을 순회하는 for 루프를 만들어냅니다. 그리고 cmd_handler 구조체를 이용해야할 때마다 for 루프를 코딩하는게 아니라 cmd_for_each 매크로를 호출하기만하면 됩니다.
+cmd_for_each macro function generates a for-loop to traversal the array of cmd_handler objects.
+Whenever you search one command in cmd_handler array, you can use cmd_for_each macro function instead of making for-loop.
 
-아주 간단한 예를 하나 생각해보겠습니다. 만약 cmd_handler 구조체에서 사용자 명령을 저장하는 cmd 필드의 이름을 command로 바꿔야한다면 어떻게하면 될까요? 만약 소스 파일 여기저기에 있는 for 루프를 일일이 찾아서 고쳐야한다면 매우 귀찬을 것입니다. cmd_for_each 매크로를 이용한다면 다음과 같이 cmd_for_each 매크로만 수정하면 됩니다.
+What is its benefit? What is it for?
+For a very simple example, what happens if we need to change the name of cmd field into command?
+Or if we need to change the type of cmd field into int type?
+We should find out all for-loop which access the chandler and change the code, and then build all files again.
+But if we used cmd_for_each macro, we would fix only cmd_for_each macro.
 
 ```c
 #define cmd_for_each(__i, __cmd, __fp, __handlers) \
@@ -66,7 +71,7 @@ cmd_for_each 매크로 함수는 cmd_handler 구조체의 배열을 순회하는
 	    __i++, __cmd=__handlers[__i].command, __fp=__handlers[__i].handler)
 ```
 
-그럼 long-if.c 예제 코드를 cmd_for_each 매크로를 쓰도록 바꿔보겠습니다.
+Let us change long-if.c file to use cmd_for_each macro.
 
 ```c
 #include <stdio.h>
@@ -137,9 +142,9 @@ int main(int argc, char *argv[])
 
 ```
 
-## 연습문제
-* chandlers라는 배열 이름을 cmd_handlers로 바꿔보세요. cmd_for_each 매크로를 호출할때 무엇을 어떻게 바꿔야할까요?
-* 현재 main함수는 사용자가 아무런 명령도 입력하지않았을때 "usage: ./a.out command(a|b|c|d|e)"라는 메세지를 출력합니다. 이렇게 하드코딩된 메세지는 당연히 좋지않겠지요. help()라는 함수를 하나 만들어서 main함수를 다음과 같이 바꿔보세요. help함수는 chandlers 배열을 순회하면서 프로그램이 지원하는 사용자 명령들을 출력해야합니다. cmd_for_each 매크로를 이용하세요.
+## Excercises
+* Change the name of chandlers into cmd_handlers. What are we supporsed to change to call cmd_for_each?
+* The main function prints "usage: ./a.out command(a|b|c|d|e)" message if user does not input any argument. It is hard coded. Hard coding is always problematic. Make a help() function and change the main function as below. help() function should use cmd_for_each macro and print the user commands supported by our program.
 ```c
 void help(struct cmd_handler *handlers)
 {
@@ -158,4 +163,4 @@ int main(int argc, char *argv[])
 	return 0;
 }
 ```
-* help 함수와 macro_if_foreach 함수를 다른 파일로 옮겨보세요. 매크로 정의들을 
+* Move help() and macro_if_foreach() functions to another file. Where should we move the macro definitions?
