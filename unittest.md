@@ -252,7 +252,7 @@ register_test function creates an object of test_node and store data from each u
 And it adds the test_node object into the list.
 run_test function traversals the list and run test one by one.
 
-### unittest_main.c 파일
+### unittest_main.c
 
 Following is an example of unittest_main.c.
 
@@ -282,7 +282,7 @@ It does not matter how many unittest files are there, or how many developers who
 There are one common interface and all unittest use the common interface.
 Each unittest is plugin of the unittest framework.
 
-## 연습문제
+## Exercise
 * test_dummy_run returns only 0. Fix it to return 0, if test succeeds, -1, if test fails.
 * Fix the message of run_test. If test succeeds, it prints "OK", or "FAIL".
 * register_test creates a list and add nodes. There is no function to clean up the memory of the list. Create a function to clean up. Where is that function called?
