@@ -1,6 +1,6 @@
-# 인터페이스과 플러그인을 분리하는 프로그래밍
+# Implement framework and plugin
 
-## cstring의 유닛테스트
+## cstring unittest
 
 위에서 말했듯이 새로운 유닛테스트를 추가해주려면 이렇게하면 됩니다.
 1. unittest_"유닛테스트이름".c를 만들고, struct unittest 객체를 만든 후 DEFINE_UNITTEST 호출
