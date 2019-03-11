@@ -2,6 +2,11 @@
 
 ## cstring unittest
 
+Let me remind you how to add new unittest.
+1. create unittest_"name".c and define an object of struct unittest, then call DEFINE_UNITTEST.
+2. add REGISTER_UNITTEST(name) in main function
+
+
 위에서 말했듯이 새로운 유닛테스트를 추가해주려면 이렇게하면 됩니다.
 1. unittest_"유닛테스트이름".c를 만들고, struct unittest 객체를 만든 후 DEFINE_UNITTEST 호출
 2. main함수에 REGISTER_UNITTEST(유닛테스트이름) 호출
