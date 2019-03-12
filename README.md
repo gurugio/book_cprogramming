@@ -15,9 +15,9 @@ Please let me know if you have any tips for practical C programming skill. Pleas
 
 *I am not English native. Please inform me if you find any broken English.*
 
-(1st version in Korean: Feb. 12 2019)
-(start translation: Feb. 23 2019)
-(finish translation: Mar. 12 2019)
+* 1st version in Korean: Feb. 12 2019
+* start translation: Feb. 23 2019
+* finish translation: Mar. 12 2019
 
 ## INDEX
 
