@@ -30,7 +30,7 @@ Please let me know if you have any tips for practical C programming skill. Pleas
   * [Implement unittest for cstring](unittest_cstring.md)
   * [Make test case with macro](unittest_cstring2.md)
 * Sample project: serial number generator
-  * [Initial version(TBD)](serial_step1.md)
+  * [Initial version](serial_step1.md)
   * [Implementation the framework and plugin for the serial number generator(TBD)](serial_step2.md)
 
 ## TODO
