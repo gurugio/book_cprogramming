@@ -68,26 +68,20 @@ Let us see the CHECK_TEST macro.
 ``!!(__condition)`` statement might be strange for someone.
 It translates any statement into the logical values: 0 or 1.
 Let us look into it step by step.
-* ``(__condition)``: 괄호를 쓰면 어떤 표현의 값을 얻게됩니다. ``((cstr->length(cstr) != 16)``와 같은 표현이라면 참/거짓이 반환되겠지요. ``(cstr->length(cstr)``와 같은 표현이라면 정수가 반환됩니다.
-* ``!(__condition)``: ! 표시는 NOT입니다. 표현의 값이 참이면 거짓으로, 0이 아닌 정수면 0으로, 0이면 1로 바꿉니다. 즉 표현식의 값을 0이나 1로 바꾸는 것입니다. 하지만 표현식의 값에 NOT을 했으므로 우리가 원하는 참/거짓값의 반대값을 가집니다.
-  * 예를 들어 ``!(cstr->length(cstr))``는 문자열의 길이가 16일때 거짓을 반환합니다.
-* ``!!(__condition)``: !가 하나일때는 표현식의 참/거짓값의 반대값을 얻습니다. 다시 NOT을 한번 더 하므로 이제야 제대로된 0/1 값을 얻을 수 있습니다.
+* ``(__condition)``: return the value of a statement. ``(cstr->length(cstr)`` returns a integer value.
+* ``!(__condition)``: ! means NOT. What is "NOT" of a integer value? If the value is 0, it is 1. If the value is not 0, it is 0. Therefore !() translates a arithmatic value into a logical value.
+  * ``!(cstr->length(cstr))`` will be 0, if the length is 16.
+* ``!!(__condition)``: What is NOT of NOT? It is nothing. So this is a final logical value. If the integer value of the condition is not zero, this is 1 (TRUE), and vice versa.
 
-
-* ``(__condition)``: 괄호를 쓰면 어떤 표현의 값을 얻게됩니다. ``((cstr->length(cstr) != 16)``와 같은 표현이라면 참/거짓이 반환되겠지요. ``(cstr->length(cstr)``와 같은 표현이라면 정수가 반환됩니다.
-* ``!(__condition)``: ! 표시는 NOT입니다. 표현의 값이 참이면 거짓으로, 0이 아닌 정수면 0으로, 0이면 1로 바꿉니다. 즉 표현식의 값을 0이나 1로 바꾸는 것입니다. 하지만 표현식의 값에 NOT을 했으므로 우리가 원하는 참/거짓값의 반대값을 가집니다.
-  * 예를 들어 ``!(cstr->length(cstr))``는 문자열의 길이가 16일때 거짓을 반환합니다.
-* ``!!(__condition)``: !가 하나일때는 표현식의 참/거짓값의 반대값을 얻습니다. 다시 NOT을 한번 더 하므로 이제야 제대로된 0/1 값을 얻을 수 있습니다.
-
-그리고 매크로 함수가 지역변수를 가지고있고, ``({...})``로 둘러싸여있습니다. 이것은 중첩문이라고 불리는 것입니다. GCC에서만 지원하는 문법입니다.
+Please notice that the macro function has a local variable.
+That is what the macro is wrapped with ``({..})``.
+It called as the compound statement of GCC compiler.
 * compound statement: http://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html#Statement-Exprs
 
-쉽게 생각하면 여러 문장을 하나로 묶을 때 ``({..})``로 묶는다고만 생각하면 됩니다. 이렇게 묶은 표현들이 특정 값을 반환할 수도 있습니다.
-
-매크로의 활용에 대해 좀더 알고싶으신 분들은 커널 소스를 읽어보시면 도움이 되실 것입니다.
+If you would like to know more about the compound statement please read kernel code:
 * https://elixir.bootlin.com/linux/latest/source/include/asm-generic/bug.h#L121
 
-만약 gcc가 아닌 다른 컴파일러를 쓰신다면 do-while 문을 이용해서 다음과 같이 만들어도 동일합니다.
+If you use another compiler, you can use do-while as following.
 ```
 #define CHECK_TEST(__condition, __msg) do { \
 			int ____ret_error = !!(__condition);						\
