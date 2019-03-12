@@ -71,20 +71,21 @@ int main(void)
 }
 ```
 
-너무나 간단하지요. 하지만 실무에서는 언제나 프로그램의 스펙이 바뀐다는걸 기억하셔야됩니다. 몇가지 스펙 변경을 요청하는 경우를 상상해볼까요?
-* 영업부서에서 연락이왔습니다. 1년만 계약해서 사용해보고싶다는 고객이 있다네요. 시리얼번호에 1년만 사용가능하도록 사용기간에 대한 정보를 추가해야합니다.
-* 마케팅에서 연락이 왔습니다. 다른 제품을 구매한 고객이 이 제품도 사용해보고 싶다고하네요. 시리얼번호에 테스트 버전이라는 정보를 추가해서 몇가지 기능만 사용할 수 있도록 만들어달라고 합니다. 시리얼번호에 테스트 버전이라는 정보도 추가해야합니다.
-* 영업부서에서 또 연락이 왔습니다. 제품이 너무 많이 팔려서 4자리 고객 아이디로는 부족하다고 합니다. 고객 아이디를 8자리로 바꿔달라고 합니다.
+It is so simple.
+But as I said several times, program requirements are always changed.
+Let us imagine some scenarios about requirement changes:
+* There are some clients who request a trial version for one month. We should add a expire date into the serial number.
+* Some clients who bought another product want to try this product. We do not need to add the expire date but we need to disable some features.
+* So many people buy this product. 4-digit user ID is expired. We should extend the user ID to 8-digit.
 
-심지어는 이런 요구사항도 들어올 수 있습니다.
-* 시리얼번호를 생성할 때 사용한 암호화 알고리즘이 너무 단순해서 시중에 크랙버전이 돌아다닌다고 합니다. 암호화 알고리즘을 바꿔야합니다. 시리얼 번호에 어떤 암호화 알고리즘이 사용되었는지에 대한 정보도 추가해야합니다.
+What do you think about them? Are they possible scenarios?
 
-충분히 있을법한 시나리오 아닌가요?
+The problem is those requirements are not thrown to us when we design the program.
+Marketing team and managers always throw more and more requirements if the product is sold more and more.
+Yes, of course, when we upgrade the product, we also have some requirements.
+We does not feel only happy but also panic.
 
-더 큰 문제는 이런 요구사항들, 스펙변경 요청들이 프로그램의 디자인 단계나 초기 개발단계에서 들어오는게 아니라는 것입니다.
-제품을 판매하는 도중에 제품이 잘팔리면 잘팔릴수록 더 많은 요구사항들이 들어오고, 더 많은 스펙 변경 요청이 들어온다는 것입니다.
-제품이 안팔려서 잊혀지는 것보다는 행복한 일이지만, 프로그램을 자꾸 변경해야하는 문제가 생깁니다.
-어쩌면 몇달 후 make_serial함수는 이런 모습이 되있을지 모릅니다.
+Finally make_serial function would be like following because more and more information should be inserted into the serial number.
 
 ```
 int make_serial(char *serial, int serial_len,
@@ -97,10 +98,9 @@ int make_serial(char *serial, int serial_len,
 ......
 }
 ```
+Do you know how many parameters a function can support?
+I do not know exactly.
+But what I know is that it is not good.
 
-C 언어에서 함수가 최대 몇개의 인자를 가질 수 있는지 확인해보신적이 있나요?
-저는 잘 모릅니다.
-제가 분명히 아는건 하나의 함수에 인자가 많을 수록 좋은 디자인이 아니라는 것입니다.
-
-## 연습문제
-* ``int make_serial(char *serial, int serial_len, char *id, int id_len, char *product, int product_len, char *expire, int expire_len, 	int trial_type, int crypt_type)`` 타입을 가지는 make_serial을 만들어보세요. 암호화 알고리즘을 사용할 필요는 없고, 단순하게 각 정보들을 그대로 버퍼에 복사하면 됩니다. strncpy를 이용할 수도 있고, sprintf를 이용할 수도 있습니다. 반복되는 코드가 보이시나요? 어떻게하면 반복되는 코드를 유연하게 바꿀 수 있을까요?
+## Excercise
+* try to implement a function ``int make_serial(char *serial, int serial_len, char *id, int id_len, char *product, int product_len, char *expire, int expire_len, int trial_type, int crypt_type)``. Just copy all information into the serial number. Can you see a pettern? Is it similar pattern that we saw in previous chapter?
