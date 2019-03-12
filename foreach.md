@@ -1,4 +1,4 @@
-# Make for-loop general
+# Make for-loop with macro
 
 In previous chapter, we created a (command, handler function) structure and an array of the structure for all user commands.
 
