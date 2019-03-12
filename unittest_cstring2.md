@@ -1,9 +1,9 @@
-# 인터페이스과 플러그인을 분리하는 프로그래밍
+# Implement framework and plugin
 
-## 테스트 케이스를 간편하게
+## Make test case with macro
 
-이전 test_cstring_run함수는 사실 아무런 테스트도하지 않았지요.
-실제로 테스트를 하는 코드를 넣어보겠습니다.
+In previous example, test_cstring_run function does not test anything.
+Let us add some test as following.
 
 ```
 static int test_cstring_run(void *priv)
@@ -27,14 +27,12 @@ static int test_cstring_run(void *priv)
 	return 0;
 }
 ```
+It checks if return values of length, max_size and at methods.
 
-cstring이 가진 인터페이스들을 테스트합니다.
-length인터페이스가 제대로 문자열의 길이를 반환하는지, max_size, at 인터페이스들도 제대로 동작하는지 실행해보고 있습니다.
-
-그런데 만들다보니까 뭔가 단순한 동작을 반복하고있다는게 느껴지지않나요?
-눈으로 보기에도 if문이 반복된다는걸 알 수 있습니다.
-이전에 자주쓰는 분기문을 매크로를 이용해서 쓰기 쉽게 만드는걸 해봤습니다.
-이번에도 똑같이 매크로를 이용해서 반복되는 표현을 쓰기 쉽게 만들어보겠습니다.
+There is a pettern for all if-statements.
+It only compares two values and prints a message.
+We have made a macro to replace a repeated if-else-statement and for-loop before.
+What about making a macro to replace the if-statement as following?
 
 ```
 #define CHECK_TEST(__condition, __msg) ({ \
@@ -62,9 +60,20 @@ static struct unittest test_cstring2 = {
 };
 ```
 
-CHECK_TEST라는 매크로를 만들었습니다. 몇가지 낯선 문법들이 보일수 있습니다.
+Now we use printf to print a message but it would be necessary to print a message on log file.
+If we make a macro to check values and print a message, it will be more flexible to print error messages.
+And of couse, the test function will be shorter.
 
-``!!(__condition)``는 어떤 표현식이던 그 값을 0혹은 1로 바꾸는 문장입니다. 하나씩 풀어보겠습니다.
+Let us see the CHECK_TEST macro.
+``!!(__condition)`` statement might be strange for someone.
+It translates any statement into the logical values: 0 or 1.
+Let us look into it step by step.
+* ``(__condition)``: 괄호를 쓰면 어떤 표현의 값을 얻게됩니다. ``((cstr->length(cstr) != 16)``와 같은 표현이라면 참/거짓이 반환되겠지요. ``(cstr->length(cstr)``와 같은 표현이라면 정수가 반환됩니다.
+* ``!(__condition)``: ! 표시는 NOT입니다. 표현의 값이 참이면 거짓으로, 0이 아닌 정수면 0으로, 0이면 1로 바꿉니다. 즉 표현식의 값을 0이나 1로 바꾸는 것입니다. 하지만 표현식의 값에 NOT을 했으므로 우리가 원하는 참/거짓값의 반대값을 가집니다.
+  * 예를 들어 ``!(cstr->length(cstr))``는 문자열의 길이가 16일때 거짓을 반환합니다.
+* ``!!(__condition)``: !가 하나일때는 표현식의 참/거짓값의 반대값을 얻습니다. 다시 NOT을 한번 더 하므로 이제야 제대로된 0/1 값을 얻을 수 있습니다.
+
+
 * ``(__condition)``: 괄호를 쓰면 어떤 표현의 값을 얻게됩니다. ``((cstr->length(cstr) != 16)``와 같은 표현이라면 참/거짓이 반환되겠지요. ``(cstr->length(cstr)``와 같은 표현이라면 정수가 반환됩니다.
 * ``!(__condition)``: ! 표시는 NOT입니다. 표현의 값이 참이면 거짓으로, 0이 아닌 정수면 0으로, 0이면 1로 바꿉니다. 즉 표현식의 값을 0이나 1로 바꾸는 것입니다. 하지만 표현식의 값에 NOT을 했으므로 우리가 원하는 참/거짓값의 반대값을 가집니다.
   * 예를 들어 ``!(cstr->length(cstr))``는 문자열의 길이가 16일때 거짓을 반환합니다.
