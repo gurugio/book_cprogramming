@@ -1,28 +1,28 @@
-# 샘플 프로젝트: 시리얼 번호 생성 프로그램
+# Sample project: serial number generator
 
-## 시험 버전
+## Initial version
 
-유닛테스트 프레임웍을 만드는 예제로 인터페이스와 플러그인을 분리하는 디자인을 알아봤습니다.
-조금 더 실무에 가까운 프로그램을 하나 만들면서 한번 더 연습을 해보겠습니다.
+Unittest framework shows you the design concept of the framework and plugin.
+I would like to show you one more example which are a little bit more practical.
 
-이번에 만들어볼 프로그램을 시리얼 번호 생성 프로그램입니다.
-윈도우를 설치할 때나 게임을 설치할 때 알파벳과 숫자로 이루어진 시리얼 번호를 입력해본 경험이 한번씩은 있을겁니다.
-우리는 개발자이니까 사용자가 아닌 회사 입장에서 사용자의 ID와 제품 번호를 가지고 시리얼 번호를 만드는 프로그램을 만들어보겠습니다.
-생성된 시리얼은 사용자에게 메일로 알려주게되겠지요. 그러니 프로그램은 시리얼 번호를 생성하는 것까지만 동작하도록 만들겠습니다.
+It is a serial number generator.
+It is very common to input a serial number when we install a software such like Windows.
+Have you ever imagine how Microsoft generates the serial number?
 
-다음 그림과 같이 2개의 정보를 입력받아서 암호화한 후 알파벳과 숫자 12자리로된 시리얼을 생성하는 프로그램입니다.
+Let us assume that the serial generator gets two data and returns 12-digit alphabet and number.
 
 ![serial1](/serial1.png)
 
-암호화까지 만드려면 좀더 생각할게 많아지니까 일단은 단순하게 사용자 ID와 제품번호를 그대로 이어붙여서 12자리 시리얼을 만들어보겠습니다.
-대략 다음과 같은 순서로 동작하는 프로그램이 되겠네요.
-* 사용자ID 입력받기
-* 제품번호 입력받기
-* 12자리 버퍼 할당
-* 사용자ID 복사
-* 사용자ID 뒤에 제품번호 복사
-* 생성된 시리얼 출력
-
+We do not consider encryption to keep it simple.
+Let us try a simplest example that gets user ID and product number.
+And it returns 12-digit serial that is just a combination of the user ID and product number.
+It should be work as following.
+* request the user ID
+* request the product number
+* allocate 12-byte buffer
+* copy the user ID
+* copy the product number after the user ID
+* print the serial number
 
 ```
 #include <stdio.h>
