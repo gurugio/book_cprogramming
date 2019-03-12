@@ -17,6 +17,7 @@ Please let me know if you have any tips for practical C programming skill. Pleas
 
 (1st version in Korean: Feb. 12 2019)
 (start translation: Feb. 23 2019)
+(finish translation: Mar. 12 2019)
 
 ## INDEX
 
@@ -31,6 +32,6 @@ Please let me know if you have any tips for practical C programming skill. Pleas
   * [Make test case with macro](unittest_cstring2.md)
 * Sample project: serial number generator
   * [Initial version](serial_step1.md)
-  * [Implementation the framework and plugin for the serial number generator(TBD)](serial_step2.md)
+  * [Implementation the framework and plugin for the serial number generator](serial_step2.md)
 
 ## TODO
