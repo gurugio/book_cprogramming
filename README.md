@@ -27,7 +27,7 @@ Please let me know if you have any tips for practical C programming skill. Pleas
   * [Object programming in C: make cstring class with C](cstring.md)
   * [Introduction](interface.md)
   * [Implement unittest framework](unittest.md)
-  * [Implement unittest for cstring(TBD)](unittest_cstring.md)
+  * [Implement unittest for cstring](unittest_cstring.md)
   * [Make test case simple(TBD)](unittest_cstring2.md)
 * Sample project: serial number generator
   * [Initial version(TBD)](serial_step1.md)
