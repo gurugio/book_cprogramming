@@ -3,7 +3,7 @@
 I first met the C language 20 years ago. I have been working with C language for 12 years.
 I have read several C programming books, but their purpose is to teach how to start programming in C.
 There is no book about program in C practically for a real product.
-Fortunately, I have learned good C programming skill when working for companies that have good C programmers a and good development process.
+Fortunately, I have learned good C programming skill when working for companies that have good C programmers and good development process.
 I have also seen how great C programmers develop large scale software, from the Linux kernel sources.
 
 This document is some part of what I have learned and seen.
