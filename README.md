@@ -35,3 +35,7 @@ Please let me know if you have any tips for practical C programming skills. Plea
   * [Implementation the framework and plugin for the serial number generator](serial_step2.md)
 
 ## TODO
+
+* pdu allocation
+* atomic counter => per_cpu counter
+* test_and_set_bit_lock
