@@ -27,7 +27,7 @@ C프로그래밍을 실무로 쓴 기간은 12년, 처음 접한 후부터로 �
 * 샘플 프로젝트: 시리얼 번호 생성 프로그램
   * [시험 버전](serial_step1.md)
   * [프레임웍 버전](serial_step2.md)
-* PDU (Protocol Data Unit) 할당
+* [PDU (Protocol Data Unit) 할당](alloc-pdu.md)
 
 ## TODO
 
