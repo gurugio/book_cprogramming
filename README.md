@@ -39,3 +39,4 @@ Please let me know if you have any tips for practical C programming skills. Plea
 * pdu allocation
 * atomic counter => per_cpu counter
 * test_and_set_bit_lock
+* function pointers -> virtual abstract layer (kernel: virtual filesystem interface)
